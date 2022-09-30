@@ -82,7 +82,7 @@ Back to homepage, select "Exit"
 
 Done. Now you are in command line terminal again.  
 
-### Allocate memory
+### Allocate memory to 'Swap Space'
 [Some prior knowledge about Swap](https://www.cnblogs.com/ultranms/p/9254160.html)   
 
 [Reference](https://cloud.tencent.com/developer/article/1704157)
