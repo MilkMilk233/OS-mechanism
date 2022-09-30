@@ -21,14 +21,19 @@ int main(int argc, char *argv[]){
 			printf("I'm the Parent Process, my pid = %d\n",getpid());
 			wait(&status);
 			printf("Parent process receives SIGCHLD signal\n");
-			if(status == 0){
-				printf("Normal termination with EXIT STATUS = 0\n");
-				exit(0);
+			if(WIFEXITED(status)){
+				printf("Normal termination with EXIT STATUS = %d\n",WEXITSTATUS(status));
+			}
+			else if(WIFSIGNALED(status)){
+				printf("CHILD EXECUTION FAILED: %d\n", WTERMSIG(status));
+			}
+			else if(WIFSTOPPED(status)){
+				printf("CHILD PROCESS STOPPED: %d\n", WSTOPSIG(status));
 			}
 			else{
-				// Caught some failure
-				exit(1);
+				printf("CHILD PROCESS CONTINUED\n");
 			}
+			exit(0);
 			
 		}
 		else{
