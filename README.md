@@ -49,7 +49,7 @@ mkswap /swapfile
 swapon /swapfile
 ```
 
-## Nohup
+### Nohup
 [Ref](https://www.runoob.com/linux/linux-comm-nohup.html)
 
 ```bash
