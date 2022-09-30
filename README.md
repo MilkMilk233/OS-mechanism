@@ -6,17 +6,18 @@ CSC3150, 22 Fall
 
 Tencent Lighthouse, 2+ Core, 4 GB+ Mem, 60GB+ SSD, Ubuntu 20.04
 
-## 配置虚拟机的方法
+## Beforehands
 
-1. https://cloud.tencent.com/developer/article/1061720 按照方法配置腾讯云lighthouse github环境
+1. https://cloud.tencent.com/developer/article/1061720 Setup guide for Lighthouse github configuration.
 
-2. 注意备份所有资料到github, 防止数据丢失
+2. Remember to sync data into github, in case of data loss.
 
-3. **提前做好镜像，随时准备回滚，必要时可重装系统**
+3. **Make image in keypoints，get ready to rollback，Reinstall the system if necessary.**
 
-## Linux kernel & gcc 升级方法
+## Download and install readily available kernel 
 
-**2022/09/30: Ignore this session, DO NOT TRY IT HERE!!!! Otherwise there will be a lot of crashes.**
+**2022/09/30: Ignore this session, DO NOT TRY IT HERE!!!!**  
+**In this assignment we need to compile kernel by DIY.**  
 
 Normal Update:
 
@@ -40,7 +41,7 @@ gcc -v      #Check gcc > 4.9
 
 ```
 
-## How to compile kernel?
+## How to DIY(compile) a kernel?
 
 ### Preparations
 
