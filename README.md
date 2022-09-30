@@ -75,9 +75,9 @@ then make sure you have a large-enough terminal window for the GUI of menuconfig
 sudo su
 make menuconfig
 ```
-Then you get into a GUI. use four arrows to select and press enter to confirm.  
+Then you get into a GUI. use four arrows to select, press enter to confirm.  
 First select "Load" -> "OK".  
-Back to homepage, select "Save" -> "OK".
+Back to homepage, select "Save" -> "OK".  
 Back to homepage, select "Exit"  
 
 Done. Now you are in command line terminal again.  
@@ -90,25 +90,25 @@ Done. Now you are in command line terminal again.
 ```bash
 cd /usr     
 mkdir swap      #create a new folder
-sudo dd if=/dev/zero of=/usr/swap/swapfile bs=1M count=4096 #Create a 4-GB memory space fo;e
+sudo dd if=/dev/zero of=/usr/swap/swapfile bs=1M count=4096 #Create a 4-GB memory space in SSD as virtual memory
 sudo du -sh /usr/swap/swapfile   #Check if this file occupy 4Gb
 sudo mkswap /usr/swap/swapfile
 sudo swapon /usr/swap/swapfile
 sudo vim /etc/fstab
 ```
 
-in vim, add this line at the end of the file: (Press `i` into insertion mode, press `Esc` then `:wq` to save and quit vim)  
+In vim, add this line at the end of the file: (Press `i` into insertion mode, press `Esc` then `:wq` to save and quit vim)  
 
 ```
 /usr/swap/swapfile swap swap defaults 0 0
 ```
 
 Then **reboot the machine**.
-After reboot, you can check if the swap area is ready：
+After reboot, you can check if the swap area is ready： 
 ```
 free -m
 ```
-If you see Swap has ~4096 avaliable, Done!
+If now Swap has ~4096 free space, Done!  
 
 ### Compile kernel(Choose either option)
 
@@ -119,7 +119,7 @@ cd ~/linux-5.10.5/
 sudo su
 make -j$(nproc)
 ```
-It takes about 1~2 hrs to finish. Don't disconnect, don't close the terminal.
+It takes about 1~2 hrs to finish. Don't disconnect, don't close the terminal.  
 If ends properly, the final lines should be:
 ```bash
 
@@ -133,9 +133,9 @@ cd ~/linux-5.10.5/
 sudo su
 nohup make -j$(nproc)       # Does not accept any intput, run in backend process, only can be killed by killing pid
 ```
-It takes about 1~2 hrs to finish. You can leave for a coffee and close terminal. Don't worry.
-The command line output will be stored in ~/linux-5.10.5/nohup.out, use *vim* to inspect result.
-(Vim hints:`Shift + g` goes to the bottom of the file, press `:wq` to save and quit,`i` into insertion mode, `Esc` to quit,  `/` to search, after search press `enter` to locate)
+It takes about 1~2 hrs to finish. You can leave for a coffee and close terminal. Don't worry.  
+The command line output will be stored in ~/linux-5.10.5/nohup.out, use *vim* to inspect result.  
+(Vim hints:`Shift + g` goes to the bottom of the file, press `:wq` to save and quit,`i` into insertion mode, `Esc` to quit,  `/` to search, after search press `enter` to locate)  
 
 ### Next steps
 
@@ -145,7 +145,7 @@ sudo su
 make modules_install
 make install
 ```
-Then reboot the machine.  
+Then reboot the machine.    
 Now everything is done!
 
 
