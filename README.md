@@ -1,9 +1,10 @@
 # CSC3150
+
 CSC3150, 22 Fall
 
 ## Environment
 
-Tencent Lighthouse, 2 Core 4 GB Mem, Ubuntu 20.04
+Tencent Lighthouse, 2+ Core, 4 GB+ Mem, 60GB+ SSD, Ubuntu 20.04
 
 ## 配置虚拟机的方法
 
@@ -11,9 +12,9 @@ Tencent Lighthouse, 2 Core 4 GB Mem, Ubuntu 20.04
 
 2. 注意备份所有资料到github, 防止数据丢失
 
-3. **提前做好镜像，随时准备回滚**
+3. **提前做好镜像，随时准备回滚，必要时可重装系统**
 
-## Linux kernel & gcc 升级方法 (Ignore in this assignment, not adaptable)
+## Linux kernel & gcc 升级方法 (Ignore in this assignment, DO NOT TRY IT HERE!!!!)
 
 Normal Update:
 
@@ -45,34 +46,31 @@ Install all dependencies
 ```bash
 sudo apt-get install libncurses-dev gawk flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf llvm dwarves
 ```
-Use `cd` to a place where you want to store source file. Make sure you have enough permission. (For example, `cd ~/`)
-
+Use `cd` to a place where you want to store source file. Make sure you have enough permission. (For example, `cd ~/`)  
 Download compressed package via wget
 ```bash
+cd ~/
 wget https://mirror.tuna.tsinghua.edu.cn/kernel/v5.x/linux-5.10.5.tar.xz
 ```
-After download, it will be stored in the current folder.
-
-Unzip it with
+After download, the compressed package will be stored in the current folder.  
+Unzip it with:
 ```bash
 sudo tar xvf linux-5.10.5.tar.xz
 ```
-then cd to the folder
+Then cd into the unzipped folder and execute:
 ```bash
-cd /boot
-ls
+cd ./linux-5.10.5/
+sudo make mrproper
+sudo make clean
 ```
-with ls, you can find a lot of files with prefix 'config'. Select one of them, copy it to the 'linux-5.10.5' folder you just unzip, rename it as '.config'
-For example:
+then download the config file via wget
 ```bash
-cp /boot/config-5.4.0-121-genetic ~/linux-5.10.5/.config
+wget https://ly-blog.oss-cn-shenzhen.aliyuncs.com/static/.config
 ```
-then use cd back to the folder 
-```bash
-cd ~/linux-5.10.5/
-```
+
 then make sure you have a large-enough terminal window for the GUI of menuconfig. Enter:
 ```
+sudo su
 make menuconfig
 ```
 Then you get into a GUI. use four arrows to select and press enter to confirm.  
@@ -97,37 +95,56 @@ sudo swapon /usr/swap/swapfile
 sudo vim /etc/fstab
 ```
 
-in vim, add this line as attachment below:
+in vim, add this line at the end of the file: (Press `i` into insertion mode, press `Esc` then `:wq` to save and quit vim)  
 
 ```
 /usr/swap/swapfile swap swap defaults 0 0
 ```
 
-Then reboot the machine.
-Check if the swap area is ready：
-
+Then **reboot the machine**.
+After reboot, you can check if the swap area is ready：
 ```
 free -m
 ```
-Done!
+If you see Swap has ~4096 avaliable, Done!
 
-### Nohup
+### Compile kernel(Choose either option)
+
+#### Option 1: in terminal
+
+```bash
+cd ~/linux-5.10.5/
+sudo su
+make -j$(nproc)
+```
+It takes about 1~2 hrs to finish. Don't disconnect, don't close the terminal.
+If ends properly, the final lines should be:
+```bash
+
+```
+
+#### Option 2:In process
 [Ref](https://www.runoob.com/linux/linux-comm-nohup.html)
 
 ```bash
+cd ~/linux-5.10.5/
 sudo su
-nohup make -j$(nproc)
+nohup make -j$(nproc)       # Does not accept any intput, run in backend process, only can be killed by killing pid
 ```
+It takes about 1~2 hrs to finish. You can leave for a coffee and close terminal. Don't worry.
+The command line output will be stored in ~/linux-5.10.5/nohup.out, use *vim* to inspect result.
+(Vim hints:`Shift + g` goes to the bottom of the file, press `:wq` to save and quit,`i` into insertion mode, `Esc` to quit,  `/` to search, after search press `enter` to locate)
 
 ### Next steps
 
-```
+```bash
+cd ~/linux-5.10.5/
 sudo su
 make modules_install
 make install
 ```
 Then reboot the machine.  
-Done!
+Now everything is done!
 
 
 ### Signal representations
