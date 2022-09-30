@@ -40,6 +40,7 @@ gcc -v      #Check gcc > 4.9
 ## How to compile kernel?
 
 ### Allocate memory
+[Some prior knowledge about Swap](https://www.cnblogs.com/ultranms/p/9254160.html)
 [Reference](https://cloud.tencent.com/developer/article/1704157)
 
 ```bash
