@@ -20,8 +20,16 @@ int main(int argc, char *argv[]){
 		if(pid != 0){
 			printf("I'm the Parent Process, my pid = %d\n",getpid());
 			wait(&status);
-			printf("Parent process receives xxx signal\n");
-			exit(0);
+			printf("Parent process receives SIGCHLD signal\n");
+			if(status == 0){
+				printf("Normal termination with EXIT STATUS = 0\n");
+				exit(0);
+			}
+			else{
+				// Caught some failure
+				exit(1);
+			}
+			
 		}
 		else{
 			int i;
