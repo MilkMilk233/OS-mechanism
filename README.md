@@ -74,4 +74,9 @@ sudo su
 nohup make -j$(nproc)
 ```
 
+### Signal representations
+
+- abort: exe 6
+- 
+
 

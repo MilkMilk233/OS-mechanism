@@ -7,6 +7,30 @@
 
 int main(int argc, char *argv[]){
 
+	char* processTerminatedSignal[] = {
+	"SIGHUP",      "SIGINT",       "SIGQUIT",      "SIGILL",      "SIGTRAP",
+	"SIGABRT",     "SIGBUS",        "SIGFPE",       "SIGKILL",     NULL,
+    "SIGSEGV",         NULL,       "SIGPIPE",     "SIGALRM",    "SIGTERM"
+	};
+
+	char* signalInfomation[] = {
+	"is hang up by hangup signal",
+	"is interrupted by interrupt signal",
+	"is quited by quit signal",
+	"gets illegal instruction",
+	"is terminated by trap signal",
+	"is abort by abort signal",
+	"gets bus error",
+	"gets floating point exception",
+	"is killed by kill signal",
+	NULL,
+	"uses invalid memory reference",
+	NULL,
+	"writes to pipe with no readers",
+	"is terminated by alarm signal",
+	"is terminated by termaniation signal",
+	};
+
 	/* fork a child process */
 	int status;
 	printf("Process start to folk\n");
@@ -16,19 +40,66 @@ int main(int argc, char *argv[]){
 		printf("Fork error!\n");
 	}
 	else{
-		//Child process
+		//Parent process
 		if(pid != 0){
 			printf("I'm the Parent Process, my pid = %d\n",getpid());
-			wait(&status);
+			waitpid(pid, &status, WUNTRACED);
 			printf("Parent process receives SIGCHLD signal\n");
 			if(WIFEXITED(status)){
 				printf("Normal termination with EXIT STATUS = %d\n",WEXITSTATUS(status));
 			}
 			else if(WIFSIGNALED(status)){
-				printf("CHILD EXECUTION FAILED: %d\n", WTERMSIG(status));
+				if(WTERMSIG(status) == 1){
+					printf("CHILD EXECUTION FAILED: Receive SIGHUP, the process is hang up.\n");
+				}
+				else if(WTERMSIG(status) == 2){
+					printf("CHILD EXECUTION FAILED: Receive SIGINT, the process is interrupted.\n");
+				}
+				else if(WTERMSIG(status) == 3){
+					printf("CHILD EXECUTION FAILED: Receive SIGQUIT, the process is quited.\n");
+				}
+				else if(WTERMSIG(status) == 4){
+					printf("CHILD EXECUTION FAILED: Receive SIGILL, the process gets illegal instruction.\n");
+				}
+				else if(WTERMSIG(status) == 5){
+					printf("CHILD EXECUTION FAILED: Receive SIGTRAP, the process is terminated by trap signal.\n");
+				}
+				else if(WTERMSIG(status) == 6){
+					printf("CHILD EXECUTION FAILED: Receive SIGABRT, the process is abort.\n");
+				}
+				else if(WTERMSIG(status) == 7){
+					printf("CHILD EXECUTION FAILED: Receive SIGBUS, the process gets bus error.\n");
+				}
+				else if(WTERMSIG(status) == 8){
+					printf("CHILD EXECUTION FAILED: Receive SIGFPE, the process gets floating point exception.\n");
+				}
+				else if(WTERMSIG(status) == 9){
+					printf("CHILD EXECUTION FAILED: Receive SIGKILL, the process is killed.\n");
+				}
+				else if(WTERMSIG(status) == 11){
+					printf("CHILD EXECUTION FAILED: Receive SIGSEGV, the process uses invalid memory reference.\n");
+				}
+				else if(WTERMSIG(status) == 13){
+					printf("CHILD EXECUTION FAILED: Receive SIGPIPE, the process writes to pipe with no readers.\n");
+				}
+				else if(WTERMSIG(status) == 14){
+					printf("CHILD EXECUTION FAILED: Receive SIGALRM, the process is terminated by alarm signal.\n");
+				}
+				else if(WTERMSIG(status) == 15){
+					printf("CHILD EXECUTION FAILED: Receive SIGTERM, the process is terminated by termaniation signal.\n");
+				}
+				else{
+					printf("CHILD EXECUTION FAILED: %d\n", WTERMSIG(status));
+				}
+				
 			}
 			else if(WIFSTOPPED(status)){
-				printf("CHILD PROCESS STOPPED: %d\n", WSTOPSIG(status));
+				if(WSTOPSIG(status) == 19){
+					printf("CHILD PROCESS STOPPED: Receive SIGSTOP signal\n");
+				}
+				else{
+					printf("CHILD PROCESS STOPPED: %d\n", WSTOPSIG(status));
+				}
 			}
 			else{
 				printf("CHILD PROCESS CONTINUED\n");
@@ -36,6 +107,7 @@ int main(int argc, char *argv[]){
 			exit(0);
 			
 		}
+		// Child process
 		else{
 			int i;
 			char *arg[argc];
@@ -44,7 +116,7 @@ int main(int argc, char *argv[]){
 				arg[i] = argv[i+1];
 			}
 			arg[argc-1] = NULL;
-			printf("Child process start to execute test program:");
+			printf("Child process start to execute test process:");
 			execve(arg[0],arg,NULL);
 
 			printf("Continue to run original child process!\n");
