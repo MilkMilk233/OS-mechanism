@@ -77,6 +77,20 @@ nohup make -j$(nproc)
 ### Signal representations
 
 - abort: exe 6
+- alarm: exe 14
+- bus: exe 7
+- floating: exe 8
+- hangup: exe 1
+- illegal_instr: exe 4
+- ubterrupt: exe 2
+- kill: exe 9
+- Normal
+- pipe: exe 13
+- quit: exe 3
+- segment_fault: exe 11
+- stop: stop 19
+- terminate: exe 15
+- trap: exe 5
 - 
 
 
