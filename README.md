@@ -13,7 +13,7 @@ Tencent Lighthouse, 2 Core 4 GB Mem, Ubuntu 20.04
 
 3. **提前做好镜像，随时准备回滚**
 
-## Linux kernel & gcc 升级方法
+## Linux kernel & gcc 升级方法 (Ignore in this assignment, not adaptable)
 
 Normal Update:
 
@@ -38,6 +38,49 @@ gcc -v      #Check gcc > 4.9
 ```
 
 ## How to compile kernel?
+
+### Preparations
+
+Install all dependencies
+```bash
+sudo apt-get install libncurses-dev gawk flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf llvm dwarves
+```
+Use `cd` to a place where you want to store source file. Make sure you have enough permission. (For example, `cd ~/`)
+
+Download compressed package via wget
+```bash
+wget https://mirror.tuna.tsinghua.edu.cn/kernel/v5.x/linux-5.10.5.tar.xz
+```
+After download, it will be stored in the current folder.
+
+Unzip it with
+```bash
+sudo tar xvf linux-5.10.5.tar.xz
+```
+then cd to the folder
+```bash
+cd /boot
+ls
+```
+with ls, you can find a lot of files with prefix 'config'. Select one of them, copy it to the 'linux-5.10.5' folder you just unzip, rename it as '.config'
+For example:
+```bash
+cp /boot/config-5.4.0-121-genetic ~/linux-5.10.5/.config
+```
+then use cd back to the folder 
+```bash
+cd ~/linux-5.10.5/
+```
+then make sure you have a large-enough terminal window for the GUI of menuconfig. Enter:
+```
+make menuconfig
+```
+Then you get into a GUI. use four arrows to select and press enter to confirm.  
+First select "Load" -> "OK".  
+Back to homepage, select "Save" -> "OK".
+Back to homepage, select "Exit"  
+
+Done. Now you are in command line terminal again.  
 
 ### Allocate memory
 [Some prior knowledge about Swap](https://www.cnblogs.com/ultranms/p/9254160.html)   
@@ -66,6 +109,8 @@ Check if the swap area is ready：
 ```
 free -m
 ```
+Done!
+
 ### Nohup
 [Ref](https://www.runoob.com/linux/linux-comm-nohup.html)
 
@@ -73,6 +118,17 @@ free -m
 sudo su
 nohup make -j$(nproc)
 ```
+
+### Next steps
+
+```
+sudo su
+make modules_install
+make install
+```
+Then reboot the machine.  
+Done!
+
 
 ### Signal representations
 
