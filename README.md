@@ -14,7 +14,9 @@ Tencent Lighthouse, 2+ Core, 4 GB+ Mem, 60GB+ SSD, Ubuntu 20.04
 
 3. **提前做好镜像，随时准备回滚，必要时可重装系统**
 
-## Linux kernel & gcc 升级方法 (Ignore in this assignment, DO NOT TRY IT HERE!!!!)
+## Linux kernel & gcc 升级方法
+
+**2022/09/30: Ignore in this assignment, DO NOT TRY IT HERE!!!! Otherwise there will be a lot of crashes.**
 
 Normal Update:
 
