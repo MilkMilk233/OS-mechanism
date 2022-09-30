@@ -6,7 +6,7 @@ CSC3150, 22 Fall
 
 Tencent Lighthouse, 2+ Core, 4 GB+ Mem, 60GB+ SSD, Ubuntu 20.04
 
-## Beforehands
+## Prerequisites
 
 1. https://cloud.tencent.com/developer/article/1061720 Setup guide for Lighthouse github configuration.
 
