@@ -7,30 +7,6 @@
 
 int main(int argc, char *argv[]){
 
-	char* processTerminatedSignal[] = {
-	"SIGHUP",      "SIGINT",       "SIGQUIT",      "SIGILL",      "SIGTRAP",
-	"SIGABRT",     "SIGBUS",        "SIGFPE",       "SIGKILL",     NULL,
-    "SIGSEGV",         NULL,       "SIGPIPE",     "SIGALRM",    "SIGTERM"
-	};
-
-	char* signalInfomation[] = {
-	"is hang up by hangup signal",
-	"is interrupted by interrupt signal",
-	"is quited by quit signal",
-	"gets illegal instruction",
-	"is terminated by trap signal",
-	"is abort by abort signal",
-	"gets bus error",
-	"gets floating point exception",
-	"is killed by kill signal",
-	NULL,
-	"uses invalid memory reference",
-	NULL,
-	"writes to pipe with no readers",
-	"is terminated by alarm signal",
-	"is terminated by termaniation signal",
-	};
-
 	/* fork a child process */
 	int status;
 	printf("Process start to folk\n");
