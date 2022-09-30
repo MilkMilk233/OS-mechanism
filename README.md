@@ -40,15 +40,30 @@ gcc -v      #Check gcc > 4.9
 ## How to compile kernel?
 
 ### Allocate memory
-[Reference](https://blog.csdn.net/babybabyup/article/details/79815118)
+[Reference](https://cloud.tencent.com/developer/article/1704157)
 
 ```bash
-free -m     #To check memory status
-dd if=/dev/zero of=/swapfile bs=1k count=1024000    # Allocate 1GB to Swap
-mkswap /swapfile
-swapon /swapfile
+cd /usr     
+mkdir swap      #create a new folder
+sudo dd if=/dev/zero of=/usr/swap/swapfile bs=1M count=4096 #Create a 4-GB memory space fo;e
+sudo du -sh /usr/swap/swapfile   #Check if this file occupy 4Gb
+sudo mkswap /usr/swap/swapfile
+sudo swapon /usr/swap/swapfile
+sudo vim /etc/fstab
 ```
 
+in vim, add this line as attachment below:
+
+```
+/usr/swap/swapfile swap swap defaults 0 0
+```
+
+Then reboot the machine.
+Check if the swap area is ready：
+
+```
+free -m
+```
 ### Nohup
 [Ref](https://www.runoob.com/linux/linux-comm-nohup.html)
 
