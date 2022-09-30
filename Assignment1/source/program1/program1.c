@@ -19,8 +19,10 @@ int main(int argc, char *argv[]){
 		//Parent process
 		if(pid != 0){
 			printf("I'm the Parent Process, my pid = %d\n",getpid());
+			/* wait for child process terminates */
 			waitpid(pid, &status, WUNTRACED);
 			printf("Parent process receives SIGCHLD signal\n");
+			/* check child process'  termination status */
 			if(WIFEXITED(status)){
 				printf("Normal termination with EXIT STATUS = %d\n",WEXITSTATUS(status));
 			}
@@ -101,10 +103,4 @@ int main(int argc, char *argv[]){
 		}
 	}
 	return 0;
-	
-	/* wait for child process terminates */
-	
-	/* check child process'  termination status */
-	
-	
 }
