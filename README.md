@@ -91,6 +91,5 @@ nohup make -j$(nproc)
 - stop: stop 19
 - terminate: exe 15
 - trap: exe 5
-- 
 
 
