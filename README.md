@@ -75,12 +75,12 @@ cd ./linux-5.10.5/
 make mrproper
 make clean
 ```
-then download the config file to the same folder via wget
+Then download the config file to the same folder via wget
 ```bash
 wget https://ly-blog.oss-cn-shenzhen.aliyuncs.com/static/.config
 ```
 
-then make sure you have a large-enough terminal window for the GUI of menuconfig. Enter:
+Then make sure you have a large-enough terminal window for the GUI of menuconfig. Enter:
 ```
 make menuconfig
 ```
@@ -127,7 +127,7 @@ If now Swap has ~4096 free space, Done!
 
 ### Compile kernel(Choose either option)
 
-#### Option 1: in terminal
+#### Option 1: In terminal
 
 Make sure you are in root mode.  
 
@@ -137,7 +137,7 @@ make -j$(nproc)
 ```
 It takes about 1~2 hrs to finish. Don't disconnect, don't close the terminal.  
 
-#### Option 2:In process(Recommended)
+#### Option 2: In process(Recommended)
 [Reference](https://www.runoob.com/linux/linux-comm-nohup.html)  
 
 Make sure you are in root mode.  
