@@ -177,6 +177,16 @@ make install
 Then reboot.  
 To save your time, don't start from `make mrproper`. 
 
+## FAQ
+
+### Cannot connect to VM via SSH after reinstall CVM (Third-person attack)
+
+In your local machine, open `cmd`, enter
+```
+ssh-keygen -R 127.0.0.1
+```
+Replace `127.0.0.1` as your server IP address. 
+
 
 ## Assignment 1
 
