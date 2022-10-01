@@ -12,7 +12,7 @@ Tencent Lighthouse, 2+ Core, 4 GB+ Mem, 60GB+ SSD, Ubuntu 20.04
 
 2. Remember to sync data into github, in case of data loss.
 
-3. **Make image in keypoints，get ready to rollback，Reinstall the system if necessary.**
+3. **Make image in keypoints，get ready to rollback，reinstall the system if necessary.**
 
 ## Download and install readily available kernel 
 
