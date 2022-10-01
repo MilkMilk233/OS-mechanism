@@ -119,8 +119,8 @@ If now Swap has ~4096 free space, Done!
 #### Option 1: in terminal
 
 ```bash
-cd ~/linux-5.10.5/
 sudo su
+cd ~/linux-5.10.5/
 make -j$(nproc)
 ```
 It takes about 1~2 hrs to finish. Don't disconnect, don't close the terminal.  
