@@ -47,6 +47,9 @@ gcc -v      #Check gcc > 4.9
 
 Install all dependencies
 ```bash
+
+sudo apt update && sudo apt install bc
+
 sudo apt-get install libncurses-dev gawk flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf llvm dwarves
 ```
 Use `cd` to a place where you want to store source file. Make sure you have enough permission. (For example, `cd ~/`)  
