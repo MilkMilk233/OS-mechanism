@@ -112,7 +112,7 @@ Modify this file in vim.
 vim /etc/fstab
 ```
 
-In vim, add this line at the end of the file: (Press `i` into insertion mode, press `Esc` then `:wq` to save and quit vim)  
+In vim, add this line at the end of the file: (Press `o` into insertion mode starting from next new line, press `Esc` then `:wq` to save and quit vim)  
 
 ```
 /usr/swap/swapfile swap swap defaults 0 0
