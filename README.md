@@ -45,14 +45,20 @@ gcc -v      #Check gcc > 4.9
 
 ### Preparations
 
+First, **enter super user(root) mode**. This applys for all the following steps.  
+
+```bash
+sudo su
+```
+
 Install all dependencies
 ```bash
 
-sudo apt update && sudo apt install bc
+apt update && sudo apt install bc
 
-sudo apt-get install libncurses-dev gawk flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf llvm dwarves
+apt-get install libncurses-dev gawk flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf llvm dwarves
 ```
-Use `cd` to a place where you want to store source file. Make sure you have enough permission. (For example, `cd ~/`)  
+Use `cd` to find a place where you want to store source file. Make sure you have enough permission. (For example, enter super user(root) by `sudo su`, and `cd ~/` to download file on path `/root/`)  
 Download compressed package via wget
 ```bash
 cd ~/
@@ -61,22 +67,21 @@ wget https://mirror.tuna.tsinghua.edu.cn/kernel/v5.x/linux-5.10.5.tar.xz
 After download, the compressed package will be stored in the current folder.  
 Unzip it with:
 ```bash
-sudo tar xvf linux-5.10.5.tar.xz
+tar xvf linux-5.10.5.tar.xz
 ```
 Then cd into the unzipped folder and execute:
 ```bash
 cd ./linux-5.10.5/
-sudo make mrproper
-sudo make clean
+make mrproper
+make clean
 ```
-then download the config file via wget
+then download the config file to the same folder via wget
 ```bash
 wget https://ly-blog.oss-cn-shenzhen.aliyuncs.com/static/.config
 ```
 
 then make sure you have a large-enough terminal window for the GUI of menuconfig. Enter:
 ```
-sudo su
 make menuconfig
 ```
 Then you get into a GUI. use four arrows to select, press enter to confirm.  
@@ -91,14 +96,20 @@ Done. Now you are in command line terminal again.
 
 [Reference](https://cloud.tencent.com/developer/article/1704157)
 
+All the commands should be executed in root mode as well.  
+
 ```bash
 cd /usr     
 mkdir swap      #create a new folder
-sudo dd if=/dev/zero of=/usr/swap/swapfile bs=1M count=4096 #Create a 4-GB memory space in SSD as virtual memory
-sudo du -sh /usr/swap/swapfile   #Check if this file occupy 4Gb
-sudo mkswap /usr/swap/swapfile
-sudo swapon /usr/swap/swapfile
-sudo vim /etc/fstab
+dd if=/dev/zero of=/usr/swap/swapfile bs=1M count=4096 #Create a 4-GB memory space in SSD as virtual memory
+du -sh /usr/swap/swapfile   #Check if this file occupy 4Gb
+mkswap /usr/swap/swapfile
+swapon /usr/swap/swapfile
+```
+
+Modify this file in vim.  
+```
+vim /etc/fstab
 ```
 
 In vim, add this line at the end of the file: (Press `i` into insertion mode, press `Esc` then `:wq` to save and quit vim)  
@@ -118,23 +129,21 @@ If now Swap has ~4096 free space, Done!
 
 #### Option 1: in terminal
 
+Make sure you are in root mode.  
+
 ```bash
-sudo su
 cd ~/linux-5.10.5/
 make -j$(nproc)
 ```
 It takes about 1~2 hrs to finish. Don't disconnect, don't close the terminal.  
-If ends properly, the final lines should be:
-```bash
 
-```
+#### Option 2:In process(Recommended)
+[Reference](https://www.runoob.com/linux/linux-comm-nohup.html)  
 
-#### Option 2:In process
-[Ref](https://www.runoob.com/linux/linux-comm-nohup.html)
+Make sure you are in root mode.  
 
 ```bash
 cd ~/linux-5.10.5/
-sudo su
 nohup make -j$(nproc)       # Does not accept any intput, run in backend process, only can be killed by killing pid
 ```
 It takes about 1~2 hrs to finish. You can leave for a coffee and close terminal. Don't worry.  
@@ -143,17 +152,37 @@ The command line output will be stored in ~/linux-5.10.5/nohup.out, use *vim* to
 
 ### Next steps
 
+Make sure you are in root mode.  
+
 ```bash
 cd ~/linux-5.10.5/
-sudo su
 make modules_install
 make install
 ```
 Then reboot the machine.    
-Now everything is done!
+Enter this command to check kernel version.
+```
+uname -r
+```
+If you see 5.10.5, Now everything is done! 
+
+### Recompile & Reinstall
+
+Please start from the step 
+```
+make -j$(nproc)
+make modules_install
+make install
+```
+Then reboot.  
+To save your time, don't start from `make mrproper`. 
 
 
-### Signal representations
+## Assignment 1
+
+### Program 1
+
+#### Signal representations
 
 - abort: exe 6
 - alarm: exe 14
