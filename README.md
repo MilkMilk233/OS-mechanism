@@ -210,4 +210,24 @@ Replace `127.0.0.1` as your server IP address.
 - terminate: exe 15
 - trap: exe 5
 
+### Program 2
+
+#### Location of kernel func:
+kernel_clone: /kernel/fork.c
+do_execve: /fs/exec.c
+do_wait: /kernel/exit.c
+getname_kernel: /fs/namei.c
+
+#### How to export?
+
+After the function, add:
+```
+EXPORT_SYMBOL(FOO)
+```
+
+then recompile, re-install, reboot.  
+
+Check this file to vertify if it's exposed:
+
+~/linux-5.10.5/Module.symdvers
 
