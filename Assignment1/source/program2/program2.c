@@ -12,11 +12,53 @@
 
 MODULE_LICENSE("GPL");
 
+struct wait_opts {
+	enum pid_type		wo_type;
+	int			wo_flags;
+	struct pid		*wo_pid;
+
+	struct waitid_info	*wo_info;
+	int			wo_stat;
+	struct rusage		*wo_rusage;
+
+	wait_queue_entry_t		child_wait;
+	int			notask_error;
+};
+
+struct filename {
+	const char		*name;	/* pointer to actual string */
+	const __user char	*uptr;	/* original userland pointer */
+	int			refcnt;
+	struct audit_names	*aname;
+	const char		iname[];
+};
+
+struct kernel_clone_args {
+	u64 flags;
+	int __user *pidfd;
+	int __user *child_tid;
+	int __user *parent_tid;
+	int exit_signal;
+	unsigned long stack;
+	unsigned long stack_size;
+	unsigned long tls;
+	pid_t *set_tid;
+	/* Number of elements in *set_tid */
+	size_t set_tid_size;
+	int cgroup;
+	struct cgroup *cgrp;
+	struct css_set *cset;
+};
+
+extern long do_wait(struct wait_opts *wo);
+extern int do_execve(struct filename *filename,
+	const char __user *const __user *__argv,
+	const char __user *const __user *__envp);
+extern pid_t kernel_clone(struct kernel_clone_args *args);
+extern struct filename *getname_kernel(const char * filename);
 
 //implement fork function
 int my_fork(void *argc){
-	
-	
 	//set default sigaction for current process
 	int i;
 	struct k_sigaction *k_action = &current->sighand->action[0];
@@ -28,6 +70,7 @@ int my_fork(void *argc){
 		k_action++;
 	}
 	
+
 	/* fork a process using kernel_clone or kernel_thread */
 	
 	/* execute a test program in child process */
@@ -42,8 +85,14 @@ static int __init program2_init(void){
 	printk("[program2] : module_init Chen Zhixin 120090222\n");
 	
 	/* write your code here */
-	
+	printk("[program2] : module_init create kthread start");
 	/* create a kernel thread to run my_fork */
+
+	task = kthread_create(&my_fork, NULL, "MyThread");
+	if(!IS_ERR(task)){
+		printk("[program2] : module_init kthread start");
+		wake_up_process(task);
+	}
 	
 	return 0;
 }
