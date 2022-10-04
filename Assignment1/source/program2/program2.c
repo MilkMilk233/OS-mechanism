@@ -39,7 +39,7 @@ int my_fork(void *argc){
 
 static int __init program2_init(void){
 
-	printk("[program2] : Module_init\n");
+	printk("[program2] : module_init Chen Zhixin 120090222\n");
 	
 	/* write your code here */
 	
