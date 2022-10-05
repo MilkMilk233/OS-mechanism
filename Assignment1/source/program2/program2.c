@@ -39,16 +39,12 @@ extern struct filename *getname_kernel(const char * filename);
 int my_exec(void){
 	int result;
 	const char path[] = "/home/vagrant/CSC3150/Assignment1/source/program2/test";
-	const char *const argv[] = {path, NULL, NULL};
-	const char *const envp[] = {"HOME=/", "PATH=/sbin:/user/sbin:/bin:/usr/bin", NULL};
 	struct filename * file_path = getname_kernel(path);
-	printk("[program2] : child process, file_name = %s", file_path->name);
+	printk("[program2] : child process");
 	result = do_execve(file_path, NULL, NULL);
 	if(!result){
-		printk("[program2] : return 0 in child, result = %d",result);
 		return 0;
 	}
-	printk("[program2] : return N/A in child, result = %d",result);
 	printk("[program2] : child process continued.");
 	do_exit(result);
 }
@@ -56,6 +52,7 @@ int my_exec(void){
 int my_wait(pid_t pid){
 	int status;
 	int a;
+	long retval;
 	
 	// int terminatedStatus;
 	struct wait_opts wo;
@@ -66,13 +63,16 @@ int my_wait(pid_t pid){
 
 	wo.wo_type   = type;
 	wo.wo_pid    = wo_pid;
-	wo.wo_flags  = WEXITED|WUNTRACED;
+	wo.wo_flags  = WEXITED;
 	wo.wo_info   = NULL;
-	wo.wo_stat   = (int __user*) &status;
+	wo.wo_stat   = status;
 	wo.wo_rusage = NULL;
 
-	do_wait(&wo);
+	// printk("[program2] : Before Do_wait.");
+	retval = do_wait(&wo);
+	// printk("[program2] : After Do_wait, the return signal is %ld.", retval & 0x7f);
 	a = wo.wo_stat;
+	// printk("[program2] : After Do_wait, the return signal is %d.", a & 0x7f);
 
 	put_pid(wo_pid);
 
@@ -99,8 +99,8 @@ int my_fork(void *argc){
 	kargs.pidfd = NULL;
 	kargs.child_tid= NULL;
 	kargs.parent_tid = NULL;
-	kargs.exit_signal = 0;
-	kargs.stack = (unsigned long)& my_exec;
+	kargs.exit_signal = SIGCHLD;
+	kargs.stack = (unsigned long)&my_exec;
 	kargs.stack_size = 0;
 	kargs.tls = 0;
 	kargs.set_tid = NULL;
@@ -116,7 +116,8 @@ int my_fork(void *argc){
 	printk("[program2] : This is the parent process, pid = %d\n", (int)current->pid);
 	/* wait until child process terminates */
 	status = my_wait(pid);
-	printk("[program2] : The return signal is %d", status);
+	printk("[program2] : child process terminated");
+	printk("[program2] : The return signal is %d", status & 0x7f);
 	
 	return 0;
 }
