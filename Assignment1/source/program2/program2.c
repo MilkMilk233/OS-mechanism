@@ -27,23 +27,6 @@ struct wait_opts {
 	int notask_error;
 };
 
-struct kernel_clone_args {
-	u64 flags;
-	int __user *pidfd;
-	int __user *child_tid;
-	int __user *parent_tid;
-	int exit_signal;
-	unsigned long stack;
-	unsigned long stack_size;
-	unsigned long tls;
-	pid_t *set_tid;
-	/* Number of elements in *set_tid */
-	size_t set_tid_size;
-	int cgroup;
-	struct cgroup *cgrp;
-	struct css_set *cset;
-};
-
 static struct task_struct *task;
 
 extern long do_wait(struct wait_opts *wo);
@@ -59,12 +42,14 @@ int my_exec(void){
 	const char *const argv[] = {path, NULL, NULL};
 	const char *const envp[] = {"HOME=/", "PATH=/sbin:/user/sbin:/bin:/usr/bin", NULL};
 	struct filename * file_path = getname_kernel(path);
-	printk("[program2] : child process");
-	result = do_execve(file_path, argv, envp);
+	printk("[program2] : child process, file_name = %s", file_path->name);
+	result = do_execve(file_path, NULL, NULL);
 	if(!result){
+		printk("[program2] : return 0 in child, result = %d",result);
 		return 0;
 	}
-	printk("[program2] : child process failed.");
+	printk("[program2] : return N/A in child, result = %d",result);
+	printk("[program2] : child process continued.");
 	do_exit(result);
 }
 
@@ -107,7 +92,7 @@ int my_fork(void *argc){
 		k_action++;
 	}
 	
-	pid_t pid;
+	
 	struct kernel_clone_args kargs;
 	/* fork a process using kernel_clone or kernel_thread */
 	kargs.flags = SIGCHLD;
@@ -116,16 +101,16 @@ int my_fork(void *argc){
 	kargs.parent_tid = NULL;
 	kargs.exit_signal = 0;
 	kargs.stack = (unsigned long)& my_exec;
-	unsigned long stack_size;
-	unsigned long tls;
-	pid_t *set_tid;
+	kargs.stack_size = 0;
+	kargs.tls = 0;
+	kargs.set_tid = NULL;
 	/* Number of elements in *set_tid */
-	size_t set_tid_size;
-	int cgroup;
-	struct cgroup *cgrp;
-	struct css_set *cset;
+	kargs.set_tid_size = 0;
+	kargs.cgroup = 0;
+	kargs.cgrp = NULL;
+	kargs.cset = NULL;
 
-	pid = kernel_clone(SIGCHLD,NULL,NULL,NULL,0,(unsigned long)& my_exec,0,0,NULL,0,0,NULL,NULL);
+	pid_t pid = kernel_clone(&kargs);
 	/* execute a test program in child process */
 	printk("[program2] : The Child process has pid = %d\n", pid);
 	printk("[program2] : This is the parent process, pid = %d\n", (int)current->pid);
