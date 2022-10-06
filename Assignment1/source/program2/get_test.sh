@@ -6,8 +6,9 @@ cp test /tmp/
 clear
 make clean
 make
+sleep 5
 insmod program2.ko
-sleep 1
+sleep 5
 rmmod program2
 dmesg | grep program2
 

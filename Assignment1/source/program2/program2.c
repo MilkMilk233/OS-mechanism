@@ -52,7 +52,6 @@ int my_exec(void){
 	if(!result){
 		return 0;
 	}
-	printk("[program2] : child process continued.\n");
 	do_exit(result);
 }
 
