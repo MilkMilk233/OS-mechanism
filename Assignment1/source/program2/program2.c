@@ -27,6 +27,12 @@ struct wait_opts {
 	int notask_error;
 };
 
+char* signal_name[] = {
+	"SIGHUP",      "SIGINT",       "SIGQUIT",      "SIGILL",      "SIGTRAP",
+	"SIGABRT",     "SIGBUS",        "SIGFPE",       "SIGKILL",     NULL,
+    "SIGSEGV",         NULL,       "SIGPIPE",     "SIGALRM",    "SIGTERM"
+};
+
 static struct task_struct *task;
 
 extern long do_wait(struct wait_opts *wo);
@@ -38,19 +44,20 @@ extern struct filename *getname_kernel(const char * filename);
 
 int my_exec(void){
 	int result;
-	const char path[] = "/home/vagrant/CSC3150/Assignment1/source/program2/test";
+	const char path[] = "/tmp/test";
 	struct filename * file_path = getname_kernel(path);
-	printk("[program2] : child process");
+	printk("[program2] : child process\n");
+
 	result = do_execve(file_path, NULL, NULL);
 	if(!result){
 		return 0;
 	}
-	printk("[program2] : child process continued.");
+	printk("[program2] : child process continued.\n");
 	do_exit(result);
 }
 
 int my_wait(pid_t pid){
-	int status;
+	int status = 0;
 	int a;
 	long retval;
 	
@@ -63,16 +70,13 @@ int my_wait(pid_t pid){
 
 	wo.wo_type   = type;
 	wo.wo_pid    = wo_pid;
-	wo.wo_flags  = WEXITED;
+	wo.wo_flags  = WEXITED|WUNTRACED;
 	wo.wo_info   = NULL;
 	wo.wo_stat   = status;
 	wo.wo_rusage = NULL;
 
-	// printk("[program2] : Before Do_wait.");
 	retval = do_wait(&wo);
-	// printk("[program2] : After Do_wait, the return signal is %ld.", retval & 0x7f);
 	a = wo.wo_stat;
-	// printk("[program2] : After Do_wait, the return signal is %d.", a & 0x7f);
 
 	put_pid(wo_pid);
 
@@ -91,7 +95,6 @@ int my_fork(void *argc){
 		sigemptyset(&k_action->sa.sa_mask);
 		k_action++;
 	}
-	
 	
 	struct kernel_clone_args kargs;
 	/* fork a process using kernel_clone or kernel_thread */
@@ -114,10 +117,28 @@ int my_fork(void *argc){
 	/* execute a test program in child process */
 	printk("[program2] : The Child process has pid = %d\n", pid);
 	printk("[program2] : This is the parent process, pid = %d\n", (int)current->pid);
+	
 	/* wait until child process terminates */
 	status = my_wait(pid);
-	printk("[program2] : child process terminated");
-	printk("[program2] : The return signal is %d", status & 0x7f);
+	int status_id = status & 0x7f;
+	if(status_id > 0 && status_id < 16){
+		printk("[program2] : get %s signal\n", signal_name[status_id-1]);
+		printk("[program2] : child process terminated\n");
+		printk("[program2] : The return signal is %d\n", status_id);
+	}
+	else if(status_id == 0){
+		printk("[program2] : child process gets normal termination\n");
+		printk("[program2] : The return signal is %d\n", status_id);
+	}
+	else if(status_id == 127){
+		printk("[program2] : child process get SIGSTOP signal\n");
+		printk("[program2] : child process terminated\n");
+		printk("[program2] : The return signal is %d\n", status_id);
+	}
+	else{
+		printk("[program2] : child process continued\n");
+	}
+	do_exit(0);
 	
 	return 0;
 }
