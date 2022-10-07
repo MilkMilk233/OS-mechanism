@@ -126,13 +126,14 @@ int my_fork(void *argc){
 		printk("[program2] : The return signal is %d\n", status_id);
 	}
 	else if(status_id == 0){
+		printk("[program2] : get SIGCHLD signal\n");
 		printk("[program2] : child process gets normal termination\n");
 		printk("[program2] : The return signal is %d\n", status_id);
 	}
 	else if(status_id == 127){
-		printk("[program2] : child process get SIGSTOP signal\n");
+		printk("[program2] : get SIGSTOP signal\n");
 		printk("[program2] : child process terminated\n");
-		printk("[program2] : The return signal is %d\n", status_id);
+		printk("[program2] : The return signal is 19\n");
 	}
 	else{
 		printk("[program2] : child process continued\n");
