@@ -239,3 +239,4 @@ Check this file to vertify if it's exposed:
 ```
 git config --global credential.helper store
 ```
+done!
