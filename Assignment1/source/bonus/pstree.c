@@ -17,17 +17,47 @@ typedef struct pidinfo {
 PidInfo pidinfos[10000];
 int pid_count = 0;
 
+void read_ppid_and_name(__pid_t pid, __pid_t sub_pid) {
+  char *str_pid = (char *)malloc(sizeof(char) * 20);
+  sprintf(str_pid, "%d", pid);
+  char *str_sub_pid = (char *)malloc(sizeof(char) * 20);
+  sprintf(str_sub_pid, "%d", sub_pid);
+  char path[30] = "/proc/";
+  strcat(path, str_pid);
+  strcat(path, "/task/");
+  strcat(path, str_sub_pid);
+  strcat(path, "/stat");
+  FILE *fp = fopen(path, "r");
+  if (fp) {
+    char name[50];
+    char i;              // Process Status, seize a seat only
+    __pid_t _pid, ppid;  // seize a seat only
+    fscanf(fp, "%d (%s %c %d", &_pid, name, &i, &ppid);
+    name[strlen(name) - 1] = '\0';
+    strcpy(pidinfos[pid_count].name, name);
+    pidinfos[pid_count].ppid = ppid;
+    printf("name=%s,ppid=%d\n",name,ppid);
+    fclose(fp);
+    free(str_pid);
+    free(str_sub_pid);
+    return;
+  } else {
+    printf("Error: file open failed at '%s'\n", path);
+    exit(1);
+  }
+}
+
 /* Search the /proc file with the help of `opendir()`, `readdir()` and
   `closedir()` Trying to get information about process & thread */
 void search_process_info() {
   int pid = 0, sub_pid = 0;
   struct dirent *dir_file, *subdir_file;
   char *folder_name;
-  DIR *dir, subdir;  // Store the structure of the folder
+  DIR *dir, *subdir;  // Store the structure of the folder
 
   if (!(dir = opendir("/proc"))) {
     printf("Can't open '/proc': Permission denied.\n");
-    return -1;
+    return;
   }
   while ((dir_file = readdir(dir)) != NULL) {
     /*  Find the hidden thread folder, e.g. ".243" */
@@ -35,37 +65,30 @@ void search_process_info() {
       continue;
     } else {  // store in pidinfo (name and pid and ppid)
       /* First look for threads */
-      if (!(subdir = opendir("/proc/%s/task\n", dir_file->d_name))) {
-        printf("Can't open '/proc/%s/task': Permission denied.\n",
-               dir_file->d_name);
+      char path[30] = "/proc/";
+      strcat(path, dir_file->d_name);
+      strcat(path, "/task");
+      if (!(subdir = opendir(path))) {
+        printf("Can't open '%s': Permission denied.\n", path
+               );
       } else {
-        while ((subdir_file == readdir(subdir)) != NULL) {
-          if ((sub_pid = atoi(dir_file->d_name)) == 0) {
+        while ((subdir_file = readdir(subdir)) != NULL) {
+          if ((sub_pid = atoi(subdir_file->d_name)) == 0) {
             continue;
           } else {
             pidinfos[pid_count].pid = pid;
-            pidinfos[pid_count].ppid =
-                readprocessname_ppid(pid, pidinfos[pid_count].name);
-            pidinfos[pid_count].tpid = sub_pid;
-            assert(pidinfos[pid_count].ppid > -1);
-            // printf("%d (%s)
-            // %d\n",pidinfos[pid_count].pid,pidinfos[pid_count].name,pidinfos[pid_count].ppid);
+            pidinfos[pid_count].tid = sub_pid;
+            printf("Read: pid=%d,tpid=%d,",pid,sub_pid);
+            read_ppid_and_name(pid, sub_pid);
             pid_count++;
           }
         }
       }
       closedir(subdir);
-      /* Then look for pids*/
-      pidinfos[pid_count].pid = pid;
-      pidinfos[pid_count].ppid =
-          readprocessname_ppid(pid, pidinfos[pid_count].name);
-      assert(pidinfos[pid_count].ppid > -1);
-      // printf("%d (%s)
-      // %d\n",pidinfos[pid_count].pid,pidinfos[pid_count].name,pidinfos[pid_count].ppid);
-      pid_count++;
     }
   }
   closedir(dir);
+  return;
 }
 
 int main(int argc, char *argv[]) {
@@ -74,8 +97,7 @@ int main(int argc, char *argv[]) {
     search_process_info();
   } else {
     int o;
-    const char *optstring =
-        "Vc:lap";  // 有三个选项-abc，其中c选项后有冒号，所以后面必须有参数
+    const char *optstring = "Vclap";
     while ((o = getopt(argc, argv, optstring)) != -1) {
       switch (o) {
         case 'V':
