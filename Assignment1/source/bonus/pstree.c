@@ -16,11 +16,13 @@ typedef struct pidinfo {
 /* Define a struct, containing its pid, ppid, tid. */
 PidInfo pidinfos[10000];
 int pid_count = 0;
+int graph_count = 0;
+int graph[50];
 
 void read_ppid_and_name(__pid_t pid, __pid_t sub_pid) {
-  char *str_pid = (char *)malloc(sizeof(char) * 20);
+  char str_pid[20];
   sprintf(str_pid, "%d", pid);
-  char *str_sub_pid = (char *)malloc(sizeof(char) * 20);
+  char str_sub_pid[20];
   sprintf(str_sub_pid, "%d", sub_pid);
   char path[30] = "/proc/";
   strcat(path, str_pid);
@@ -38,8 +40,6 @@ void read_ppid_and_name(__pid_t pid, __pid_t sub_pid) {
     pidinfos[pid_count].ppid = ppid;
     printf("name=%s,ppid=%d\n", name, ppid);
     fclose(fp);
-    free(str_pid);
-    free(str_sub_pid);
     return;
   } else {
     printf("Error: file open failed at '%s'\n", path);
@@ -90,10 +90,41 @@ void search_process_info() {
   return;
 }
 
+// typedef struct node{
+// 	int pid;
+//   int tid;
+//   int ppid;
+//   char *name;
+// 	struct node *child_node[100];
+// }Node;
+
+// typedef struct tree{
+// 	Node * root;
+// }Tree;
+
+// Tree process_tree;
+// // Initialization: Create an empty tree.
+// process_tree.root = NULL;
+
+// void insert_node(Tree *tree, Node *node){
+
+// }
+
+void print_tree(int if_show_pid, int if_compressed){
+  PidInfo current_pid;
+  for(int i = 0; i < pid_count; i++){
+    if(pidinfos[i].pid == 1){
+      current_pid = pidinfos[i];
+      break;
+    }
+  }
+}
+
 int main(int argc, char *argv[]) {
   if (argc == 1) {
     printf("This is the default case.\n");
     search_process_info();
+    print_tree(0, 1);
   } else {
     int o;
     const char *optstring = "Vclap";
@@ -110,7 +141,8 @@ int main(int argc, char *argv[]) {
               "named COPYING.\n");
           break;
         case 'c':
-          printf("opt is c, oprarg is: %s\n", optarg);
+          search_process_info();
+          print_tree(0, 0);
           break;
         case 'l':
           printf("opt is l, oprarg is: %s\n", optarg);
