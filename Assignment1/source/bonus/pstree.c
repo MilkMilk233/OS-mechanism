@@ -15,10 +15,65 @@ typedef struct pidinfo {
 } PidInfo;
 /* Define a struct, containing its pid, ppid, tid. */
 PidInfo pidinfos[10000];
+int pid_count = 0;
+
+/* Search the /proc file with the help of `opendir()`, `readdir()` and `closedir()`
+  Trying to get information about process & thread */
+void search_process_info() {
+    int pid = 0, sub_pid = 0;
+    struct dirent *dir_file, *subdir_file;
+    char *folder_name; 
+    DIR *dir, subdir;  // Store the structure of the folder
+    
+    if(!(dir = opendir("/proc")))
+    {
+        printf("Can't open '/proc': Permission denied.");
+        return -1;
+    }
+    while ((dir_file = readdir(dir)) != NULL) {
+      /*  Find the hidden thread folder, e.g. ".243" */
+      if ((pid = atoi(dir_file->d_name)) == 0) {
+        continue;
+      } else {  // store in pidinfo (name and pid and ppid)
+        /* First look for threads */
+        if(!(subdir = opendir("/proc/%s/task", dir_file->d_name)))
+        {
+            printf("Can't open '/proc/%s/task': Permission denied.", dir_file->d_name);
+        }
+        else{
+          while((subdir_file == readdir(subdir)) != NULL){
+            if ((sub_pid = atoi(dir_file->d_name)) == 0) {
+              continue;
+            } else {
+              pidinfos[pid_count].pid = pid;
+              pidinfos[pid_count].ppid = 
+                  readprocessname_ppid(pid, pidinfos[pid_count].name);
+              pidinfos[pid_count].tpid = sub_pid;
+              assert(pidinfos[pid_count].ppid > -1);
+              // printf("%d (%s)
+              // %d\n",pidinfos[pid_count].pid,pidinfos[pid_count].name,pidinfos[pid_count].ppid);
+              pid_count++;
+            }
+          }
+        }
+        closedir(subdir);
+        /* Then look for pids*/
+        pidinfos[pid_count].pid = pid;
+        pidinfos[pid_count].ppid =
+            readprocessname_ppid(pid, pidinfos[pid_count].name);
+        assert(pidinfos[pid_count].ppid > -1);
+        // printf("%d (%s)
+        // %d\n",pidinfos[pid_count].pid,pidinfos[pid_count].name,pidinfos[pid_count].ppid);
+        pid_count++;
+      }
+    }
+    closedir(dir);
+}
 
 int main(int argc, char *argv[]) {
   if(argc == 1){
     printf("This is the default case.\n");
+    search_process_info();
   }
   else{
     int o;
@@ -48,9 +103,13 @@ int main(int argc, char *argv[]) {
           printf("opt is p, oprarg is: %s\n", optarg);
           break;
         case '?':
-          printf("Usage: pstree [ -c ]\n");
+          printf("Usage: pstree [ -a ] [ -c ] [ -l ] [ -p ]\n");
           printf("       pstree -V\n");
           printf("Display a tree of processes.\n\n");
+          printf("       pstree -a                  show command line arguments\n");
+          printf("       pstree -c                  don't compact identical subtrees\n");
+          printf("       pstree -l                  don't truncate long lines\n");
+          printf("       pstree -p                  show PIDs; implies -c\n");
           printf("       pstree -V                  display version information\n");
           break;
       }
