@@ -240,3 +240,10 @@ Check this file to vertify if it's exposed:
 git config --global credential.helper store
 ```
 done!
+
+
+### CLANG FORMAT
+
+```
+clang-format-11 -style=Google -i program1.c      #直接在源文件上修改
+```
