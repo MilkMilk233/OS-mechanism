@@ -90,26 +90,6 @@ void search_process_info() {
   return;
 }
 
-// typedef struct node{
-// 	int pid;
-//   int tid;
-//   int ppid;
-//   char *name;
-// 	struct node *child_node[100];
-// }Node;
-
-// typedef struct tree{
-// 	Node * root;
-// }Tree;
-
-// Tree process_tree;
-// // Initialization: Create an empty tree.
-// process_tree.root = NULL;
-
-// void insert_node(Tree *tree, Node *node){
-
-// }
-
 void print_tree(int if_show_pid, int if_compressed){
   PidInfo current_pid;
   for(int i = 0; i < pid_count; i++){
