@@ -36,7 +36,7 @@ void read_ppid_and_name(__pid_t pid, __pid_t sub_pid) {
     name[strlen(name) - 1] = '\0';
     strcpy(pidinfos[pid_count].name, name);
     pidinfos[pid_count].ppid = ppid;
-    printf("name=%s,ppid=%d\n",name,ppid);
+    printf("name=%s,ppid=%d\n", name, ppid);
     fclose(fp);
     free(str_pid);
     free(str_sub_pid);
@@ -69,8 +69,7 @@ void search_process_info() {
       strcat(path, dir_file->d_name);
       strcat(path, "/task");
       if (!(subdir = opendir(path))) {
-        printf("Can't open '%s': Permission denied.\n", path
-               );
+        printf("Can't open '%s': Permission denied.\n", path);
       } else {
         while ((subdir_file = readdir(subdir)) != NULL) {
           if ((sub_pid = atoi(subdir_file->d_name)) == 0) {
@@ -78,7 +77,7 @@ void search_process_info() {
           } else {
             pidinfos[pid_count].pid = pid;
             pidinfos[pid_count].tid = sub_pid;
-            printf("Read: pid=%d,tpid=%d,",pid,sub_pid);
+            printf("Read: pid=%d,tpid=%d,", pid, sub_pid);
             read_ppid_and_name(pid, sub_pid);
             pid_count++;
           }
