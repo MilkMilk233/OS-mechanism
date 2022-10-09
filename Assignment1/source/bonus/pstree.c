@@ -97,14 +97,6 @@ void search_process_info() {
     2. 递归激活子进程， 同时画线
 */
 void print_tree(int if_show_pid, int if_compressed, PidInfo *current_pid, int line_distance){
-  // int height = 0;
-  // // 初始化，设定Pid = 1作为head（默认）
-  // for(int i = 0; i < pid_count; i++){
-  //   if(pidinfos[i].pid == 1){
-  //     current_pid = pidinfos[i];
-  //     break;
-  //   }
-  // }
 
   // 寻找ppid为current_pid的所有进程
   PidInfo sub_pidinfos[300];
