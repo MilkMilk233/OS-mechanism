@@ -419,7 +419,10 @@ int main(int argc, char *argv[])
 		print_tree(1, &pidinfos[0], 0, 0, 0);
 	} else {
 		int o;
+		int if_compressed = 1;
+		int if_show_pid = 0;
 		const char *optstring = "VclAp";
+		int consent = 1;
 		while ((o = getopt(argc, argv, optstring)) != -1) {
 			switch (o) {
 			case 'V':
@@ -430,29 +433,25 @@ int main(int argc, char *argv[])
 				       "License.\nFor more information about these matters, see the "
 				       "files "
 				       "named COPYING.\n");
+				consent = 0;
 				break;
 			case 'c':
 				// If_show_pid = false
-				search_process_info();
 				// if_compressed = false, starting from pid=1, If_show_pid = false
-				print_tree(0, &pidinfos[0], 0, 0, 0);
+				if_compressed = 0;
 				break;
 			case 'l':
 				// Same as default.
-				search_process_info();
 				// if_compressed = true, starting from pid=1, If_show_pid = false
-				print_tree(1, &pidinfos[0], 0, 0, 0);
 				break;
 			case 'A':
 				// Same as default.
-				search_process_info();
 				// if_compressed = true, starting from pid=1, If_show_pid = false
-				print_tree(1, &pidinfos[0], 0, 0, 0);
 				break;
 			case 'p':
 				// if_compressed = false, starting from pid=1, If_show_pid = true
-				search_process_info();
-				print_tree(0, &pidinfos[0], 0, 0, 1);
+				if_compressed = 0;
+				if_show_pid = 1;
 				break;
 			case '?':
 				printf("Usage: pstree [ -A ] [ -c ] [ -l ] [ -p ]\n");
@@ -466,8 +465,14 @@ int main(int argc, char *argv[])
 				printf("       pstree -p                  show PIDs; implies -c\n");
 				printf("       pstree -V                  display version "
 				       "information\n");
+				consent = 0;
 				break;
 			}
+		}
+		if (consent) {
+			search_process_info();
+			print_tree(if_compressed, &pidinfos[0], 0, 0,
+				   if_show_pid);
 		}
 	}
 	return 0;
