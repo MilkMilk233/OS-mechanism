@@ -1,0 +1,328 @@
+This is the default case.
+Read: pid=1,tpid=1,name=systemd,ppid=0
+Read: pid=2,tpid=2,name=kthreadd,ppid=0
+Read: pid=3,tpid=3,name=rcu_gp,ppid=2
+Read: pid=4,tpid=4,name=rcu_par_gp,ppid=2
+Read: pid=5,tpid=5,name=kworker/0:0-mm_percpu_wq,ppid=2
+Read: pid=6,tpid=6,name=kworker/0:0H-events_highpri,ppid=2
+Read: pid=8,tpid=8,name=mm_percpu_wq,ppid=2
+Read: pid=9,tpid=9,name=ksoftirqd/0,ppid=2
+Read: pid=10,tpid=10,name=rcu_sched,ppid=2
+Read: pid=11,tpid=11,name=migration/0,ppid=2
+Read: pid=13,tpid=13,name=cpuhp/0,ppid=2
+Read: pid=14,tpid=14,name=cpuhp/1,ppid=2
+Read: pid=15,tpid=15,name=migration/1,ppid=2
+Read: pid=16,tpid=16,name=ksoftirqd/1,ppid=2
+Read: pid=18,tpid=18,name=kworker/1:0H-events_highpri,ppid=2
+Read: pid=19,tpid=19,name=cpuhp/2,ppid=2
+Read: pid=20,tpid=20,name=migration/2,ppid=2
+Read: pid=21,tpid=21,name=ksoftirqd/2,ppid=2
+Read: pid=23,tpid=23,name=kworker/2:0H-events_highpri,ppid=2
+Read: pid=24,tpid=24,name=cpuhp/3,ppid=2
+Read: pid=25,tpid=25,name=migration/3,ppid=2
+Read: pid=26,tpid=26,name=ksoftirqd/3,ppid=2
+Read: pid=28,tpid=28,name=kworker/3:0H-events_highpri,ppid=2
+Read: pid=29,tpid=29,name=kdevtmpfs,ppid=2
+Read: pid=30,tpid=30,name=netns,ppid=2
+Read: pid=31,tpid=31,name=rcu_tasks_rude_,ppid=2
+Read: pid=32,tpid=32,name=rcu_tasks_trace,ppid=2
+Read: pid=33,tpid=33,name=kauditd,ppid=2
+Read: pid=34,tpid=34,name=khungtaskd,ppid=2
+Read: pid=35,tpid=35,name=oom_reaper,ppid=2
+Read: pid=36,tpid=36,name=writeback,ppid=2
+Read: pid=37,tpid=37,name=kcompactd0,ppid=2
+Read: pid=38,tpid=38,name=ksmd,ppid=2
+Read: pid=39,tpid=39,name=khugepaged,ppid=2
+Read: pid=63,tpid=63,name=kintegrityd,ppid=2
+Read: pid=64,tpid=64,name=kblockd,ppid=2
+Read: pid=65,tpid=65,name=blkcg_punt_bio,ppid=2
+Read: pid=66,tpid=66,name=tpm_dev_wq,ppid=2
+Read: pid=67,tpid=67,name=ata_sff,ppid=2
+Read: pid=68,tpid=68,name=md,ppid=2
+Read: pid=69,tpid=69,name=edac-poller,ppid=2
+Read: pid=70,tpid=70,name=devfreq_wq,ppid=2
+Read: pid=71,tpid=71,name=watchdogd,ppid=2
+Read: pid=73,tpid=73,name=kworker/0:1H-kblockd,ppid=2
+Read: pid=77,tpid=77,name=kswapd0,ppid=2
+Read: pid=78,tpid=78,name=ecryptfs-kthrea,ppid=2
+Read: pid=79,tpid=79,name=kthrotld,ppid=2
+Read: pid=80,tpid=80,name=acpi_thermal_pm,ppid=2
+Read: pid=82,tpid=82,name=scsi_eh_0,ppid=2
+Read: pid=83,tpid=83,name=scsi_tmf_0,ppid=2
+Read: pid=84,tpid=84,name=scsi_eh_1,ppid=2
+Read: pid=85,tpid=85,name=scsi_tmf_1,ppid=2
+Read: pid=86,tpid=86,name=ipv6_addrconf,ppid=2
+Read: pid=87,tpid=87,name=kworker/3:1H-kblockd,ppid=2
+Read: pid=90,tpid=90,name=zswap-shrink,ppid=2
+Read: pid=96,tpid=96,name=charger_manager,ppid=2
+Read: pid=97,tpid=97,name=kworker/u9:0,ppid=2
+Read: pid=123,tpid=123,name=kworker/1:1H-kblockd,ppid=2
+Read: pid=154,tpid=154,name=kworker/2:2-mm_percpu_wq,ppid=2
+Read: pid=155,tpid=155,name=cryptd,ppid=2
+Read: pid=168,tpid=168,name=mpt_poll_0,ppid=2
+Read: pid=169,tpid=169,name=mpt/0,ppid=2
+Read: pid=182,tpid=182,name=irq/18-vmwgfx,ppid=2
+Read: pid=183,tpid=183,name=ttm_swap,ppid=2
+Read: pid=184,tpid=184,name=card0-crtc0,ppid=2
+Read: pid=185,tpid=185,name=card0-crtc1,ppid=2
+Read: pid=186,tpid=186,name=card0-crtc2,ppid=2
+Read: pid=187,tpid=187,name=card0-crtc3,ppid=2
+Read: pid=188,tpid=188,name=card0-crtc4,ppid=2
+Read: pid=189,tpid=189,name=card0-crtc5,ppid=2
+Read: pid=190,tpid=190,name=card0-crtc6,ppid=2
+Read: pid=191,tpid=191,name=card0-crtc7,ppid=2
+Read: pid=192,tpid=192,name=scsi_eh_2,ppid=2
+Read: pid=193,tpid=193,name=scsi_tmf_2,ppid=2
+Read: pid=194,tpid=194,name=kworker/2:1H-kblockd,ppid=2
+Read: pid=267,tpid=267,name=raid5wq,ppid=2
+Read: pid=321,tpid=321,name=jbd2/sda1-8,ppid=2
+Read: pid=322,tpid=322,name=ext4-rsv-conver,ppid=2
+Read: pid=398,tpid=398,name=iscsi_eh,ppid=2
+Read: pid=399,tpid=399,name=iscsi_destroy,ppid=2
+Read: pid=402,tpid=402,name=systemd-journal,ppid=1
+Read: pid=412,tpid=412,name=lvmetad,ppid=1
+Read: pid=431,tpid=431,name=systemd-udevd,ppid=1
+Read: pid=461,tpid=461,name=ib-comp-wq,ppid=2
+Read: pid=462,tpid=462,name=ib-comp-unb-wq,ppid=2
+Read: pid=463,tpid=463,name=ib_mcast,ppid=2
+Read: pid=464,tpid=464,name=ib_nl_sa_wq,ppid=2
+Read: pid=565,tpid=565,name=rdma_cm,ppid=2
+Read: pid=855,tpid=855,name=dhclient,ppid=1
+Read: pid=996,tpid=996,name=iscsid,ppid=1
+Read: pid=997,tpid=997,name=iscsid,ppid=1
+Read: pid=1000,tpid=1000,name=lxcfs,ppid=1
+Read: pid=1000,tpid=1004,name=lxcfs,ppid=1
+Read: pid=1000,tpid=1005,name=lxcfs,ppid=1
+Read: pid=1003,tpid=1003,name=atd,ppid=1
+Read: pid=1007,tpid=1007,name=dbus-daemon,ppid=1
+Read: pid=1010,tpid=1010,name=acpid,ppid=1
+Read: pid=1013,tpid=1013,name=systemd-logind,ppid=1
+Read: pid=1015,tpid=1015,name=rsyslogd,ppid=1
+Read: pid=1015,tpid=1030,name=in:imuxsock,ppid=1
+Read: pid=1015,tpid=1031,name=in:imklog,ppid=1
+Read: pid=1015,tpid=1032,name=rs:mai,ppid=1
+Read: pid=1016,tpid=1016,name=accounts-daemon,ppid=1
+Read: pid=1016,tpid=1034,name=gmain,ppid=1
+Read: pid=1016,tpid=1037,name=gdbus,ppid=1
+Read: pid=1021,tpid=1021,name=cron,ppid=1
+Read: pid=1035,tpid=1035,name=sshd,ppid=1
+Read: pid=1046,tpid=1046,name=unattended-upgr,ppid=1
+Read: pid=1046,tpid=1152,name=gmain,ppid=1
+Read: pid=1053,tpid=1053,name=polkitd,ppid=1
+Read: pid=1053,tpid=1066,name=gmain,ppid=1
+Read: pid=1053,tpid=1070,name=gdbus,ppid=1
+Read: pid=1054,tpid=1054,name=mdadm,ppid=1
+Read: pid=1094,tpid=1094,name=agetty,ppid=1
+Read: pid=1099,tpid=1099,name=agetty,ppid=1
+Read: pid=1114,tpid=1114,name=irqbalance,ppid=1
+Read: pid=1905,tpid=1905,name=sshd,ppid=1035
+Read: pid=1907,tpid=1907,name=systemd,ppid=1
+Read: pid=1908,tpid=1908,name=(sd-pam),ppid=1907
+Read: pid=1944,tpid=1944,name=sshd,ppid=1905
+Read: pid=1945,tpid=1945,name=bash,ppid=1944
+Read: pid=1990,tpid=1990,name=sh,ppid=1945
+Read: pid=2000,tpid=2000,name=node,ppid=1990
+Read: pid=2000,tpid=2013,name=node,ppid=1990
+Read: pid=2000,tpid=2014,name=node,ppid=1990
+Read: pid=2000,tpid=2015,name=node,ppid=1990
+Read: pid=2000,tpid=2016,name=node,ppid=1990
+Read: pid=2000,tpid=2017,name=node,ppid=1990
+Read: pid=2000,tpid=2024,name=node,ppid=1990
+Read: pid=2000,tpid=2058,name=node,ppid=1990
+Read: pid=2000,tpid=2059,name=node,ppid=1990
+Read: pid=2000,tpid=2060,name=node,ppid=1990
+Read: pid=2000,tpid=2061,name=node,ppid=1990
+Read: pid=2062,tpid=2062,name=node,ppid=2000
+Read: pid=2062,tpid=2063,name=node,ppid=2000
+Read: pid=2062,tpid=2064,name=node,ppid=2000
+Read: pid=2062,tpid=2065,name=node,ppid=2000
+Read: pid=2062,tpid=2066,name=node,ppid=2000
+Read: pid=2062,tpid=2067,name=node,ppid=2000
+Read: pid=2062,tpid=2071,name=node,ppid=2000
+Read: pid=2062,tpid=2083,name=node,ppid=2000
+Read: pid=2062,tpid=2084,name=node,ppid=2000
+Read: pid=2062,tpid=2085,name=node,ppid=2000
+Read: pid=2062,tpid=2086,name=node,ppid=2000
+Read: pid=2062,tpid=2163,name=node,ppid=2000
+Read: pid=2062,tpid=3190,name=node,ppid=2000
+Read: pid=2062,tpid=4648,name=node,ppid=2000
+Read: pid=2062,tpid=4948,name=node,ppid=2000
+Read: pid=2062,tpid=17917,name=node,ppid=2000
+Read: pid=2062,tpid=22945,name=node,ppid=2000
+Read: pid=2162,tpid=2162,name=bash,ppid=2062
+Read: pid=2854,tpid=2854,name=kworker/2:0,ppid=2
+Read: pid=2856,tpid=2856,name=kworker/3:2-cgroup_destroy,ppid=2
+Read: pid=3189,tpid=3189,name=bash,ppid=2062
+Read: pid=3197,tpid=3197,name=kworker/u8:0-events_unbound,ppid=2
+Read: pid=3601,tpid=3601,name=kworker/u8:1-events_power_efficient,ppid=2
+Read: pid=4497,tpid=4497,name=sleep,ppid=8373
+Read: pid=4498,tpid=4498,name=sleep,ppid=18451
+Read: pid=4499,tpid=4499,name=sleep,ppid=14887
+Read: pid=4500,tpid=4500,name=sleep,ppid=15026
+Read: pid=4501,tpid=4501,name=sleep,ppid=31024
+Read: pid=4502,tpid=4502,name=sleep,ppid=1945
+Read: pid=4525,tpid=4525,name=sh,ppid=2062
+Read: pid=4526,tpid=4526,name=cpuUsage.sh,ppid=4525
+Read: pid=4529,tpid=4529,name=sleep,ppid=4526
+Read: pid=4530,tpid=4530,name=pstree,ppid=22944
+Read: pid=4647,tpid=4647,name=bash,ppid=2062
+Read: pid=4708,tpid=4708,name=man,ppid=4647
+Read: pid=4720,tpid=4720,name=pager,ppid=4708
+Read: pid=4947,tpid=4947,name=bash,ppid=2062
+Read: pid=8315,tpid=8315,name=sshd,ppid=1035
+Read: pid=8372,tpid=8372,name=sshd,ppid=8315
+Read: pid=8373,tpid=8373,name=bash,ppid=8372
+Read: pid=8425,tpid=8425,name=node,ppid=2000
+Read: pid=8425,tpid=8426,name=node,ppid=2000
+Read: pid=8425,tpid=8427,name=node,ppid=2000
+Read: pid=8425,tpid=8428,name=node,ppid=2000
+Read: pid=8425,tpid=8429,name=node,ppid=2000
+Read: pid=8425,tpid=8430,name=node,ppid=2000
+Read: pid=8425,tpid=8431,name=node,ppid=2000
+Read: pid=8425,tpid=8432,name=node,ppid=2000
+Read: pid=8425,tpid=8433,name=node,ppid=2000
+Read: pid=8425,tpid=8434,name=node,ppid=2000
+Read: pid=8425,tpid=8435,name=node,ppid=2000
+Read: pid=8425,tpid=8449,name=node,ppid=2000
+Read: pid=8436,tpid=8436,name=node,ppid=2000
+Read: pid=8436,tpid=8437,name=node,ppid=2000
+Read: pid=8436,tpid=8438,name=node,ppid=2000
+Read: pid=8436,tpid=8439,name=node,ppid=2000
+Read: pid=8436,tpid=8440,name=node,ppid=2000
+Read: pid=8436,tpid=8441,name=node,ppid=2000
+Read: pid=8436,tpid=8442,name=node,ppid=2000
+Read: pid=8436,tpid=8443,name=node,ppid=2000
+Read: pid=8436,tpid=8444,name=node,ppid=2000
+Read: pid=8436,tpid=8445,name=node,ppid=2000
+Read: pid=8436,tpid=8446,name=node,ppid=2000
+Read: pid=8436,tpid=8447,name=node,ppid=2000
+Read: pid=8631,tpid=8631,name=node,ppid=8425
+Read: pid=8631,tpid=8632,name=node,ppid=8425
+Read: pid=8631,tpid=8633,name=node,ppid=8425
+Read: pid=8631,tpid=8634,name=node,ppid=8425
+Read: pid=8631,tpid=8635,name=node,ppid=8425
+Read: pid=8631,tpid=8636,name=node,ppid=8425
+Read: pid=8631,tpid=8639,name=node,ppid=8425
+Read: pid=14769,tpid=14769,name=kworker/0:1,ppid=2
+Read: pid=14771,tpid=14771,name=kworker/3:1-events,ppid=2
+Read: pid=14829,tpid=14829,name=sshd,ppid=1035
+Read: pid=14886,tpid=14886,name=sshd,ppid=14829
+Read: pid=14887,tpid=14887,name=bash,ppid=14886
+Read: pid=14990,tpid=14990,name=sshd,ppid=1035
+Read: pid=15025,tpid=15025,name=sshd,ppid=14990
+Read: pid=15026,tpid=15026,name=bash,ppid=15025
+Read: pid=16487,tpid=16487,name=kworker/1:0-events,ppid=2
+Read: pid=17350,tpid=17350,name=man,ppid=4947
+Read: pid=17362,tpid=17362,name=pager,ppid=17350
+Read: pid=17916,tpid=17916,name=bash,ppid=2062
+Read: pid=18025,tpid=18025,name=vim,ppid=17916
+Read: pid=18393,tpid=18393,name=sshd,ppid=1035
+Read: pid=18450,tpid=18450,name=sshd,ppid=18393
+Read: pid=18451,tpid=18451,name=bash,ppid=18450
+Read: pid=22944,tpid=22944,name=bash,ppid=2062
+Read: pid=26016,tpid=26016,name=kworker/1:2-events,ppid=2
+Read: pid=29916,tpid=29916,name=man,ppid=2162
+Read: pid=29928,tpid=29928,name=pager,ppid=29916
+Read: pid=30966,tpid=30966,name=sshd,ppid=1035
+Read: pid=31023,tpid=31023,name=sshd,ppid=30966
+Read: pid=31024,tpid=31024,name=bash,ppid=31023
+systemd-+-systemd-journal
+        |-lvmetad
+        |-systemd-udevd
+        |-dhclient
+        |-iscsid
+        |-iscsid
+        |-lxcfs
+        |-{lxcfs}
+        |-{lxcfs}
+        |-atd
+        |-dbus-daemon
+        |-acpid
+        |-systemd-logind
+        |-rsyslogd
+        |-{in:imuxsock}
+        |-{in:imklog}
+        |-{rs:mai}
+        |-accounts-daemon
+        |-{gmain}
+        |-{gdbus}
+        |-cron
+        |-sshd-+-sshd---sshd---bash-+-sh-+-node-+-node-+-bash---man---pager
+        |      |                    |    |      |      |-bash
+        |      |                    |    |      |      |-sh---cpuUsage.sh---sleep
+        |      |                    |    |      |      |-bash---man---pager
+        |      |                    |    |      |      |-bash---man---pager
+        |      |                    |    |      |      |-bash---vim
+        |      |                    |    |      |      `-bash---pstree
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-node-+-node
+        |      |                    |    |      |      |-{node}
+        |      |                    |    |      |      |-{node}
+        |      |                    |    |      |      |-{node}
+        |      |                    |    |      |      |-{node}
+        |      |                    |    |      |      |-{node}
+        |      |                    |    |      |      `-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-node
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      |-{node}
+        |      |                    |    |      `-{node}
+        |      |                    |    |-{node}
+        |      |                    |    |-{node}
+        |      |                    |    |-{node}
+        |      |                    |    |-{node}
+        |      |                    |    |-{node}
+        |      |                    |    |-{node}
+        |      |                    |    |-{node}
+        |      |                    |    |-{node}
+        |      |                    |    |-{node}
+        |      |                    |    `-{node}
+        |      |                    `-sleep
+        |      |-sshd---sshd---bash---sleep
+        |      |-sshd---sshd---bash---sleep
+        |      |-sshd---sshd---bash---sleep
+        |      |-sshd---sshd---bash---sleep
+        |      `-sshd---sshd---bash---sleep
+        |-unattended-upgr
+        |-{gmain}
+        |-polkitd
+        |-{gmain}
+        |-{gdbus}
+        |-mdadm
+        |-agetty
+        |-agetty
+        |-irqbalance
+        `-systemd---(sd-pam)

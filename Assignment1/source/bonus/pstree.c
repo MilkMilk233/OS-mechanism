@@ -32,9 +32,9 @@ void read_ppid_and_name(__pid_t pid, __pid_t sub_pid) {
   FILE *fp = fopen(path, "r");
   if (fp) {
     char name[50];
-    char i;              // Process Status, seize a seat only
+    char process_status;              // Process Status, seize a seat only
     __pid_t _pid, ppid;  // seize a seat only
-    fscanf(fp, "%d (%s %c %d", &_pid, name, &i, &ppid);
+    fscanf(fp, "%d (%s %c %d", &_pid, name, &process_status, &ppid);
     name[strlen(name) - 1] = '\0';
     strcpy(pidinfos[pid_count].name, name);
     pidinfos[pid_count].ppid = ppid;
@@ -90,21 +90,126 @@ void search_process_info() {
   return;
 }
 
-void print_tree(int if_show_pid, int if_compressed){
-  PidInfo current_pid;
-  for(int i = 0; i < pid_count; i++){
-    if(pidinfos[i].pid == 1){
-      current_pid = pidinfos[i];
-      break;
+
+// 把这里当作主战场！！！不要把问题留到 main function.
+/* 功能：
+    1. 打印当前PID信息
+    2. 递归激活子进程， 同时画线
+*/
+void print_tree(int if_show_pid, int if_compressed, PidInfo *current_pid, int line_distance){
+  // int height = 0;
+  // // 初始化，设定Pid = 1作为head（默认）
+  // for(int i = 0; i < pid_count; i++){
+  //   if(pidinfos[i].pid == 1){
+  //     current_pid = pidinfos[i];
+  //     break;
+  //   }
+  // }
+
+  // 寻找ppid为current_pid的所有进程
+  PidInfo sub_pidinfos[300];
+  int count_subprocess = 0;
+  int is_thread = 0;
+  if(current_pid->pid == current_pid->tid){
+    for(int i = 0; i < pid_count; i++){
+      if(pidinfos[i].ppid == current_pid->pid){
+        sub_pidinfos[count_subprocess] = pidinfos[i];
+        count_subprocess++;
+      }
     }
   }
+  else{
+    is_thread = 1;
+  }
+
+  // 输出第一个pid name,打印名字的时候注意是否为THREAD。同时记得压缩。
+  // char output[200];
+  if(is_thread){
+    printf("{");
+  }
+  printf("%s",current_pid->name);
+  line_distance += strlen(current_pid->name);
+  if(is_thread){
+    printf("}");
+    line_distance += 2;
+  }
+
+  // 对列表里的子进程进行排序，按名字顺序或pid排序，从小到大。
+  // TODO
+
+  // 说明这是一个叶子进程（没有子进程），此时应当输出了。
+  if(count_subprocess == 0){
+    printf("\n");
+    return;
+  }
+  // 只有一个子进程
+  else if(count_subprocess == 1){
+    printf("---");
+    current_pid = &sub_pidinfos[0];
+    print_tree(if_show_pid, if_compressed, current_pid, line_distance + 3);
+    return;
+  }
+  // 有多个子进程
+  else{
+    // 在光标处加一个分隔符！
+    graph[graph_count] = line_distance+1;
+    graph_count++; 
+    for(int i = 0; i < count_subprocess; i++){
+      // 第一个！直接用printf直球打印当前的，不换行
+      if(i == 0){
+        printf("-+-");
+        current_pid = &sub_pidinfos[0];
+        print_tree(if_show_pid, if_compressed, current_pid, line_distance + 3);
+      }
+      // 最后一个！打印graph + 当前的，只不过最后一个"|"变成“ ` ”号。
+      else if(i == count_subprocess - 1){
+        for(int j = 0; j < graph_count; j++){
+          if(j == 0){
+            printf("%*s",graph[0],"");
+          }
+          else{
+            printf("%*s",graph[j]-graph[j-1]-1,"");
+          }
+          if(j == graph_count-1){
+            printf("`-");
+          }
+          else{
+            printf("|");
+          }
+        }
+        current_pid = &sub_pidinfos[i];
+        print_tree(if_show_pid, if_compressed, current_pid, line_distance + 3);
+      }
+      // 其他！用printf打印graph + 当前的，不换行
+      else{
+        for(int j = 0; j < graph_count; j++){
+          if(j == 0){
+            printf("%*s",graph[0],"");
+            printf("|");
+          }
+          else{
+            printf("%*s",graph[j]-graph[j-1]-1,"");
+            printf("|");
+          }
+          if(j == graph_count-1){
+            printf("-");
+          }
+        }
+        current_pid = &sub_pidinfos[i];
+        print_tree(if_show_pid, if_compressed, current_pid, line_distance + 3);
+      }
+    }
+    graph_count--;
+    return;
+  }
+
 }
 
 int main(int argc, char *argv[]) {
   if (argc == 1) {
     printf("This is the default case.\n");
     search_process_info();
-    print_tree(0, 1);
+    print_tree(0, 1, &pidinfos[0], 0);
   } else {
     int o;
     const char *optstring = "Vclap";
@@ -122,7 +227,7 @@ int main(int argc, char *argv[]) {
           break;
         case 'c':
           search_process_info();
-          print_tree(0, 0);
+          print_tree(0, 0, &pidinfos[0], 0);
           break;
         case 'l':
           printf("opt is l, oprarg is: %s\n", optarg);
