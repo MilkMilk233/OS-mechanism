@@ -284,7 +284,9 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance,
 	// 说明这是一个叶子进程（没有子进程），此时应当输出了。
 	if (count_subprocess == 0) {
 		if (if_duplicated)
-			printf("]");
+			for (int k = 0; k < if_duplicated; k++) {
+				printf("]");
+			}
 		printf("\n");
 		return;
 	}
@@ -298,8 +300,8 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance,
 			strcat(prefix, "*[");
 			printf("%s", prefix);
 			print_tree(if_compressed, current_pid,
-				   line_distance + 3 + strlen(prefix), 1,
-				   if_show_pid);
+				   line_distance + 3 + strlen(prefix),
+				   if_duplicated + 1, if_show_pid);
 		} else if (current_pid->duplicated_num != -1) {
 			print_tree(if_compressed, current_pid,
 				   line_distance + 3, if_duplicated,
@@ -327,7 +329,8 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance,
 					print_tree(if_compressed, current_pid,
 						   line_distance + 3 +
 							   strlen(prefix),
-						   1, if_show_pid);
+						   if_duplicated + 1,
+						   if_show_pid);
 				} else if (current_pid->duplicated_num != -1) {
 					print_tree(if_compressed, current_pid,
 						   line_distance + 3,
@@ -363,7 +366,8 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance,
 					print_tree(if_compressed, current_pid,
 						   line_distance + 3 +
 							   strlen(prefix),
-						   1, if_show_pid);
+						   if_duplicated + 1,
+						   if_show_pid);
 				} else if (current_pid->duplicated_num != -1) {
 					print_tree(if_compressed, current_pid,
 						   line_distance + 3,
@@ -399,7 +403,8 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance,
 					print_tree(if_compressed, current_pid,
 						   line_distance + 3 +
 							   strlen(prefix),
-						   1, if_show_pid);
+						   if_duplicated + 1,
+						   if_show_pid);
 				} else if (current_pid->duplicated_num != -1) {
 					print_tree(if_compressed, current_pid,
 						   line_distance + 3,
