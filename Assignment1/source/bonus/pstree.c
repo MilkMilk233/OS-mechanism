@@ -19,7 +19,7 @@ int pid_count = 0;
 int graph_count = 0;
 int graph[50];
 
-void read_ppid_and_name(__pid_t pid, __pid_t sub_pid, int if_show_pid) {
+void read_ppid_and_name(__pid_t pid, __pid_t sub_pid) {
   char str_pid[20];
   sprintf(str_pid, "%d", pid);
   char str_sub_pid[20];
@@ -54,11 +54,6 @@ void read_ppid_and_name(__pid_t pid, __pid_t sub_pid, int if_show_pid) {
       }
       name[0] = '{';
     }
-    if(if_show_pid){
-      strcat(name,"(");
-      strcat(name,str_sub_pid);
-      strcat(name,")");
-    }
     strcpy(pidinfos[pid_count].name, name);
     pidinfos[pid_count].ppid = ppid;
     // printf("name=%s,ppid=%d\n", name, ppid);
@@ -72,7 +67,7 @@ void read_ppid_and_name(__pid_t pid, __pid_t sub_pid, int if_show_pid) {
 
 /* Search the /proc file with the help of `opendir()`, `readdir()` and
   `closedir()` Trying to get information about process & thread */
-void search_process_info(int if_show_pid) {
+void search_process_info() {
   int pid = 0, sub_pid = 0;
   struct dirent *dir_file, *subdir_file;
   char *folder_name;
@@ -101,7 +96,7 @@ void search_process_info(int if_show_pid) {
             pidinfos[pid_count].pid = pid;
             pidinfos[pid_count].tid = sub_pid;
             // printf("Read: pid=%d,tpid=%d,", pid, sub_pid);
-            read_ppid_and_name(pid, sub_pid, if_show_pid);
+            read_ppid_and_name(pid, sub_pid);
             pid_count++;
           }
         }
@@ -122,10 +117,10 @@ void search_process_info(int if_show_pid) {
     1. 打印当前PID信息
     2. 递归激活子进程， 同时画线
 */
-void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int if_duplicated){
+void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int if_duplicated, int if_show_pid){
 
   // 寻找ppid为current_pid的所有进程
-  PidInfo sub_pidinfos[300];
+  PidInfo sub_pidinfos[500];
   int count_subprocess = 0;
   int is_thread = 0;
   if(current_pid->pid == current_pid->tid){
@@ -147,10 +142,6 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int 
     }
     // 对列表里的子进程进行排序，按名字顺序或pid排序，从小到大。
     if(count_subprocess > 1){
-      char temp[50];
-      __pid_t temp_pid;
-      __pid_t temp_ppid;
-      __pid_t temp_tid;
       PidInfo temp_process;
 
       for(int i = 0; i < count_subprocess - 1; i++){
@@ -160,9 +151,24 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int 
             sub_pidinfos[i] = sub_pidinfos[j];
             sub_pidinfos[j] = temp_process;
           }
+          else if(strcmp(sub_pidinfos[i].name, sub_pidinfos[j].name) == 0){
+            if(sub_pidinfos[i].tid > sub_pidinfos[j].tid){
+              temp_process = sub_pidinfos[i];
+              sub_pidinfos[i] = sub_pidinfos[j];
+              sub_pidinfos[j] = temp_process;
+            }
+          }
         }
       }
     }
+  }
+  
+  if(if_show_pid){
+    char str_tid[20];
+    sprintf(str_tid, "%d", current_pid->tid);
+    strcat(current_pid->name,"(");
+    strcat(current_pid->name, str_tid);
+    strcat(current_pid->name,")");
   }
 
   printf("%s",current_pid->name);
@@ -179,7 +185,7 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int 
   else if(count_subprocess == 1){
     printf("---");
     current_pid = &sub_pidinfos[0];
-    print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated);
+    print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated, if_show_pid);
     return;
   }
   // 有多个子进程
@@ -192,7 +198,7 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int 
       if(i == 0){
         printf("-+-");
         current_pid = &sub_pidinfos[0];
-        print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated);
+        print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated, if_show_pid);
       }
       // 最后一个！打印graph + 当前的，只不过最后一个"|"变成“ ` ”号。
       else if(i == count_subprocess - 1){
@@ -212,7 +218,7 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int 
           }
         }
         current_pid = &sub_pidinfos[i];
-        print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated);
+        print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated, if_show_pid);
       }
       // 其他！用printf打印graph + 当前的，不换行
       else{
@@ -230,7 +236,7 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int 
           }
         }
         current_pid = &sub_pidinfos[i];
-        print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated);
+        print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated, if_show_pid);
       }
     }
     return;
@@ -240,10 +246,9 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int 
 
 int main(int argc, char *argv[]) {
   if (argc == 1) {
-    // If_show_pid = false
-    search_process_info(0);
-    // if_compressed = true, starting from pid=1.
-    print_tree(1, &pidinfos[0], 0, 0);
+    search_process_info();
+    // if_compressed = true, starting from pid=1, If_show_pid = false
+    print_tree(1, &pidinfos[0], 0, 0, 0);
   } else {
     int o;
     const char *optstring = "Vclap";
@@ -261,23 +266,23 @@ int main(int argc, char *argv[]) {
           break;
         case 'c':
           // If_show_pid = false
-          search_process_info(0);
-          // if_compressed = false, starting from pid=1.
-          print_tree(0, &pidinfos[0], 0, 0);
+          search_process_info();
+          // if_compressed = false, starting from pid=1, If_show_pid = false
+          print_tree(0, &pidinfos[0], 0, 0, 0);
           break;
         case 'l':
           // Same as default.
-          // If_show_pid = false
-          search_process_info(0);
-          // if_compressed = true, starting from pid=1.
-          print_tree(1, &pidinfos[0], 0, 0);
+          search_process_info();
+          // if_compressed = true, starting from pid=1, If_show_pid = false
+          print_tree(1, &pidinfos[0], 0, 0, 0);
           break;
         case 'a':
           printf("opt is a, oprarg is: %s\n", optarg);
           break;
         case 'p':
-          search_process_info(1);
-          print_tree(0, &pidinfos[0], 0, 0);
+        // if_compressed = false, starting from pid=1, If_show_pid = true
+          search_process_info();
+          print_tree(0, &pidinfos[0], 0, 0, 1);
           break;
         case '?':
           printf("Usage: pstree [ -a ] [ -c ] [ -l ] [ -p ]\n");
