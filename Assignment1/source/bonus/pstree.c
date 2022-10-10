@@ -419,7 +419,7 @@ int main(int argc, char *argv[])
 		print_tree(1, &pidinfos[0], 0, 0, 0);
 	} else {
 		int o;
-		const char *optstring = "Vclap";
+		const char *optstring = "VclAp";
 		while ((o = getopt(argc, argv, optstring)) != -1) {
 			switch (o) {
 			case 'V':
@@ -443,7 +443,7 @@ int main(int argc, char *argv[])
 				// if_compressed = true, starting from pid=1, If_show_pid = false
 				print_tree(1, &pidinfos[0], 0, 0, 0);
 				break;
-			case 'a':
+			case 'A':
 				// Same as default.
 				search_process_info();
 				// if_compressed = true, starting from pid=1, If_show_pid = false
