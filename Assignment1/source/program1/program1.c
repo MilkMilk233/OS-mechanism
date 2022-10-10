@@ -28,44 +28,31 @@ int main(int argc, char *argv[])
 				       WEXITSTATUS(status));
 			} else if (WIFSIGNALED(status)) {
 				if (WTERMSIG(status) == 1) {
-					printf("CHILD EXECUTION FAILED: Receive SIGHUP, the process is hang "
-					       "up.\n");
+					printf("child process get SIGHUP signal\n");
 				} else if (WTERMSIG(status) == 2) {
-					printf("CHILD EXECUTION FAILED: Receive SIGINT, the process is "
-					       "interrupted.\n");
+					printf("child process get SIGINT signal\n");
 				} else if (WTERMSIG(status) == 3) {
-					printf("CHILD EXECUTION FAILED: Receive SIGQUIT, the process is "
-					       "quited.\n");
+					printf("child process get SIGQUIT signal\n");
 				} else if (WTERMSIG(status) == 4) {
-					printf("CHILD EXECUTION FAILED: Receive SIGILL, the process gets "
-					       "illegal instruction.\n");
+					printf("child process get SIGILL signal\n");
 				} else if (WTERMSIG(status) == 5) {
-					printf("CHILD EXECUTION FAILED: Receive SIGTRAP, the process is "
-					       "terminated by trap signal.\n");
+					printf("child process get SIGTRAP signal\n");
 				} else if (WTERMSIG(status) == 6) {
-					printf("CHILD EXECUTION FAILED: Receive SIGABRT, the process is "
-					       "abort.\n");
+					printf("child process get SIGABRT signal\n");
 				} else if (WTERMSIG(status) == 7) {
-					printf("CHILD EXECUTION FAILED: Receive SIGBUS, the process gets bus "
-					       "error.\n");
+					printf("child process get SIGBUS signal\n");
 				} else if (WTERMSIG(status) == 8) {
-					printf("CHILD EXECUTION FAILED: Receive SIGFPE, the process gets "
-					       "floating point exception.\n");
+					printf("child process get SIGFPE signal\n");
 				} else if (WTERMSIG(status) == 9) {
-					printf("CHILD EXECUTION FAILED: Receive SIGKILL, the process is "
-					       "killed.\n");
+					printf("child process get SIGKILL signal\n");
 				} else if (WTERMSIG(status) == 11) {
-					printf("CHILD EXECUTION FAILED: Receive SIGSEGV, the process uses "
-					       "invalid memory reference.\n");
+					printf("child process get SIGSEGV signal\n");
 				} else if (WTERMSIG(status) == 13) {
-					printf("CHILD EXECUTION FAILED: Receive SIGPIPE, the process writes "
-					       "to pipe with no readers.\n");
+					printf("child process get SIGPIPE signal\n");
 				} else if (WTERMSIG(status) == 14) {
-					printf("CHILD EXECUTION FAILED: Receive SIGALRM, the process is "
-					       "terminated by alarm signal.\n");
+					printf("child process get SIGALRM signal\n");
 				} else if (WTERMSIG(status) == 15) {
-					printf("CHILD EXECUTION FAILED: Receive SIGTERM, the process is "
-					       "terminated by termaniation signal.\n");
+					printf("child process get SIGTERM signal\n");
 				} else {
 					printf("CHILD EXECUTION FAILED: %d\n",
 					       WTERMSIG(status));
@@ -73,7 +60,7 @@ int main(int argc, char *argv[])
 
 			} else if (WIFSTOPPED(status)) {
 				if (WSTOPSIG(status) == 19) {
-					printf("CHILD PROCESS STOPPED: Receive SIGSTOP signal\n");
+					printf("child process get SIGSTOP signal\n");
 				} else {
 					printf("CHILD PROCESS STOPPED: %d\n",
 					       WSTOPSIG(status));
