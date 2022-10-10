@@ -12,6 +12,7 @@ typedef struct pidinfo {
   __pid_t pid;
   __pid_t ppid;
   __pid_t tid;
+  int duplicated_num;
 } PidInfo;
 /* Define a struct, containing its pid, ppid, tid. */
 PidInfo pidinfos[10000];
@@ -111,6 +112,41 @@ void search_process_info() {
   return;
 }
 
+int is_identical(PidInfo *pid_a, PidInfo *pid_b){
+  int a_location, b_location;
+  int a_count = 0;
+  int b_count = 0;
+  if(strcmp(pid_a->name, pid_b->name) != 0) return 0;
+  if(pid_a->tid == pid_a->pid){
+    // Process
+    for(int i = 0; i < pid_count; i++){
+      if(pidinfos[i].ppid == pid_a->pid){
+        a_count++;
+        if(a_count == 2) return 0;
+        a_location = i;
+      }
+      else if(pidinfos[i].ppid == pid_b->pid){
+        b_count++;
+        if(b_count == 2) return 0;
+        b_location = i;
+      }
+    }
+  }
+  // Thread
+  else{
+    return 1;
+  }
+  if(a_count == b_count && a_count == 0){
+    return 1;
+  }
+  else if(a_count == b_count){
+    return is_identical(&pidinfos[a_location], &pidinfos[b_location]);
+  }
+  else{
+    return 0;
+  }
+}
+
 
 // 把这里当作主战场！！！不要把问题留到 main function.
 /* 功能：
@@ -125,18 +161,49 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int 
   int is_thread = 0;
   if(current_pid->pid == current_pid->tid){
     for(int i = 0; i < pid_count; i++){
+      if(pidinfos[i].duplicated_num == -1) continue;
       // For process
       if(pidinfos[i].pid == pidinfos[i].tid){
         if(pidinfos[i].ppid == current_pid->pid){
-          sub_pidinfos[count_subprocess] = pidinfos[i];
-          count_subprocess++;
+          // 看当前存档里是否有相同的，若有，则归一
+          if(if_compressed){
+            for(int j = 0; j < count_subprocess; j++){
+              if(strcmp(sub_pidinfos[j].name, pidinfos[i].name) == 0){
+                if(is_identical(&sub_pidinfos[j], &pidinfos[i])){
+                  sub_pidinfos[j].duplicated_num++;
+                  pidinfos[i].duplicated_num = -1;
+                  break;
+                }
+              }
+            }
+          }
+          if(pidinfos[i].duplicated_num != -1){
+            sub_pidinfos[count_subprocess] = pidinfos[i];
+            count_subprocess++;
+          }
         }
       }
       // For thread
       else{
         if(pidinfos[i].pid == current_pid->pid){
-          sub_pidinfos[count_subprocess] = pidinfos[i];
-          count_subprocess++;
+          // sub_pidinfos[count_subprocess] = pidinfos[i];
+          // count_subprocess++;
+          // 看当前存档里是否有相同的，若有，则归一
+          if(if_compressed){
+            for(int j = 0; j < count_subprocess; j++){
+              if(strcmp(sub_pidinfos[j].name, pidinfos[i].name) == 0){
+                if(is_identical(&sub_pidinfos[j], &pidinfos[i])){
+                  sub_pidinfos[j].duplicated_num++;
+                  pidinfos[i].duplicated_num = -1;
+                  break;
+                }
+              }
+            }
+          }
+          if(pidinfos[i].duplicated_num != -1){
+            sub_pidinfos[count_subprocess] = pidinfos[i];
+            count_subprocess++;
+          }
         }
       }
     }
@@ -162,6 +229,22 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int 
       }
     }
   }
+
+  // if(if_compressed){
+  //   if(count_subprocess > 1){
+  //     for(int i = 0; i < count_subprocess - 1; i++){
+  //       if(sub_pidinfos[i].duplicated_num == -1) continue;
+  //       for(int j = i + 1; j < count_subprocess; j++){
+  //         if(strcmp(sub_pidinfos[i].name, sub_pidinfos[j].name) == 0){
+  //           if(is_identical(&sub_pidinfos[i], &sub_pidinfos[j])){
+  //             sub_pidinfos[i].duplicated_num++;
+  //             sub_pidinfos[j].duplicated_num = -1;
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
   
   if(if_show_pid){
     char str_tid[20];
@@ -178,6 +261,7 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int 
 
   // 说明这是一个叶子进程（没有子进程），此时应当输出了。
   if(count_subprocess == 0){
+    if(if_duplicated) printf("]");
     printf("\n");
     return;
   }
@@ -185,7 +269,16 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int 
   else if(count_subprocess == 1){
     printf("---");
     current_pid = &sub_pidinfos[0];
-    print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated, if_show_pid);
+    if(current_pid->duplicated_num > 0){
+      char prefix[10];
+      sprintf(prefix, "%d", current_pid->duplicated_num+1);
+      strcat(prefix,"*[");
+      printf("%s",prefix);
+      print_tree(if_compressed, current_pid, line_distance + 3 + strlen(prefix), 1, if_show_pid);
+    }
+    else if(current_pid->duplicated_num != -1){
+      print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated, if_show_pid);
+    }
     return;
   }
   // 有多个子进程
@@ -198,7 +291,16 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int 
       if(i == 0){
         printf("-+-");
         current_pid = &sub_pidinfos[0];
-        print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated, if_show_pid);
+        if(current_pid->duplicated_num > 0){
+          char prefix[10];
+          sprintf(prefix, "%d", current_pid->duplicated_num+1);
+          strcat(prefix,"*[");
+          printf("%s",prefix);
+          print_tree(if_compressed, current_pid, line_distance + 3 + strlen(prefix), 1, if_show_pid);
+        }
+        else if(current_pid->duplicated_num != -1){
+          print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated, if_show_pid);
+        }
       }
       // 最后一个！打印graph + 当前的，只不过最后一个"|"变成“ ` ”号。
       else if(i == count_subprocess - 1){
@@ -218,7 +320,17 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int 
           }
         }
         current_pid = &sub_pidinfos[i];
-        print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated, if_show_pid);
+        if(current_pid->duplicated_num > 0){
+          char prefix[10];
+          sprintf(prefix, "%d", current_pid->duplicated_num+1);
+          strcat(prefix,"*[");
+          printf("%s",prefix);
+          print_tree(if_compressed, current_pid, line_distance + 3 + strlen(prefix), 1, if_show_pid);
+        }
+        else if(current_pid->duplicated_num != -1){
+          print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated, if_show_pid);
+        }
+        
       }
       // 其他！用printf打印graph + 当前的，不换行
       else{
@@ -236,7 +348,16 @@ void print_tree(int if_compressed, PidInfo *current_pid, int line_distance, int 
           }
         }
         current_pid = &sub_pidinfos[i];
-        print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated, if_show_pid);
+        if(current_pid->duplicated_num > 0){
+          char prefix[10];
+          sprintf(prefix, "%d", current_pid->duplicated_num+1);
+          strcat(prefix,"*[");
+          printf("%s",prefix);
+          print_tree(if_compressed, current_pid, line_distance + 3 + strlen(prefix), 1, if_show_pid);
+        }
+        else if(current_pid->duplicated_num != -1){
+          print_tree(if_compressed, current_pid, line_distance + 3, if_duplicated, if_show_pid);
+        }
       }
     }
     return;
@@ -277,7 +398,10 @@ int main(int argc, char *argv[]) {
           print_tree(1, &pidinfos[0], 0, 0, 0);
           break;
         case 'a':
-          printf("opt is a, oprarg is: %s\n", optarg);
+          // Same as default.
+          search_process_info();
+          // if_compressed = true, starting from pid=1, If_show_pid = false
+          print_tree(1, &pidinfos[0], 0, 0, 0);
           break;
         case 'p':
         // if_compressed = false, starting from pid=1, If_show_pid = true
@@ -285,12 +409,11 @@ int main(int argc, char *argv[]) {
           print_tree(0, &pidinfos[0], 0, 0, 1);
           break;
         case '?':
-          printf("Usage: pstree [ -a ] [ -c ] [ -l ] [ -p ]\n");
+          printf("Usage: pstree [ -A ] [ -c ] [ -l ] [ -p ]\n");
           printf("       pstree -V\n");
           printf("Display a tree of processes.\n\n");
           printf(
-              "       pstree -a                  show command line "
-              "arguments\n");
+              "       pstree -A                  use ASCII line drawing characters\n");
           printf(
               "       pstree -c                  don't compact identical "
               "subtrees\n");

@@ -1,0 +1,34 @@
+systemd-+-accounts-daemon-+-{gdbus}
+        |                 `-{gmain}
+        |-acpid
+        |-2*[agetty]
+        |-atd
+        |-cron
+        |-dbus-daemon
+        |-dhclient
+        |-irqbalance
+        |-2*[iscsid]
+        |-lvmetad
+        |-lxcfs---2*[{lxcfs}]
+        |-mdadm
+        |-polkitd-+-{gdbus}
+        |         `-{gmain}
+        |-rsyslogd-+-{in:imklog}
+        |          |-{in:imuxsock}
+        |          `-{rs:main Q:Reg}
+        |-sshd-+-sshd---sshd---bash-+-sh---node-+-node-+-3*[bash---man---pager]
+        |      |                    |           |      |-bash
+        |      |                    |           |      |-bash---vim
+        |      |                    |           |      |-bash---pstree
+        |      |                    |           |      `-16*[{node}]
+        |      |                    |           |-node-+-node---6*[{node}]
+        |      |                    |           |      `-11*[{node}]
+        |      |                    |           |-node---11*[{node}]
+        |      |                    |           `-10*[{node}]
+        |      |                    `-sleep
+        |      `-6*[sshd---sshd---bash---sleep]
+        |-systemd---(sd-pam)
+        |-systemd-journal
+        |-systemd-logind
+        |-systemd-udevd
+        `-unattended-upgr---{gmain}
