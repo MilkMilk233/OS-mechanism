@@ -1,4 +1,4 @@
-# CSC3150
+# CSC3150 Assignment 1
 
 CSC3150, 22 Fall
 
