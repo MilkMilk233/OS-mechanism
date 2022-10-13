@@ -232,15 +232,6 @@ Check this file to vertify if it's exposed:
 ~/linux-5.10.5/Module.symdvers
 
 
-### 每次都要重新输密码？
-
-试试在根目录下输入
-
-```
-sudo git config --system --unset credential.helper
-```
-done!
-
 
 ### CLANG FORMAT
 
