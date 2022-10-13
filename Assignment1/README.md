@@ -237,7 +237,7 @@ Check this file to vertify if it's exposed:
 试试在根目录下输入
 
 ```
-git config --global credential.helper store
+sudo git config --system --unset credential.helper
 ```
 done!
 
