@@ -106,12 +106,13 @@ void *logs_move( void *t ){
 			}
 		}
 		/*  Check game's status  */
-		if(*log_no % 2 == 0){
+		if(*log_no % 2 == 1){
 			map[*log_no+1][log_pos[*log_no]] = ' ';
 			map[*log_no+1][(log_pos[*log_no] + 15) % 49] = '=';
 			log_pos[*log_no] = (log_pos[*log_no] + 1) % 49;
 			if(frog.x == *log_no + 1){
 				map[frog.x][frog.y] = '=';
+				map[*log_no+1][(log_pos[*log_no]+48) % 49] = ' ';
 				frog.y += 1;
 				if(frog.y == 49) pthread_cond_signal(&count_threshold_cv);
 				map[frog.x][frog.y] = '0';
@@ -123,6 +124,7 @@ void *logs_move( void *t ){
 			log_pos[*log_no] = (log_pos[*log_no] + 48) % 49;
 			if(frog.x == *log_no + 1){
 				map[frog.x][frog.y] = '=';
+				map[*log_no+1][(log_pos[*log_no] + 15) % 49] = ' ';
 				frog.y -= 1;
 				if(frog.y == -1) pthread_cond_signal(&count_threshold_cv);
 				map[frog.x][frog.y] = '0';
