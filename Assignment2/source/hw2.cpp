@@ -55,16 +55,47 @@ int kbhit(void){
 	return 0;
 }
 
+void clean_original_path(void){
+	if(frog.x != 0 && frog.x != 10){
+		map[frog.x][frog.y] = '=';
+	}
+	else{
+		map[frog.x][frog.y] = '|';
+	}
+}
 
 void *logs_move( void *t ){
 	/*  Move the logs  */
 	int i = 0;
 	int *log_no = (int*)t;
-	for(int k = 0; k < 5; k++){
+	char key_response;
+	for(int k = 0; k < 10; k++){
 		pthread_mutex_lock(&count_mutex);
 		/*  Check keyboard hits, to change frog's position or quit the game. */
+		if(kbhit()){
+			key_response = getchar();
+			if(key_response == 'w' || key_response == 'W'){
+				clean_original_path();
+				frog.x -= 1;
+				map[frog.x][frog.y] = '0' ;
+			}
+			else if(key_response == 'a' || key_response == 'A'){
+				clean_original_path();
+				frog.y -= 1;
+				map[frog.x][frog.y] = '0' ;
+			}
+			else if(key_response == 's' || key_response == 'S'){
+				clean_original_path();
+				frog.x += 1;
+				map[frog.x][frog.y] = '0' ;
+			}
+			else if(key_response == 'd' || key_response == 'D'){
+				clean_original_path();
+				frog.y += 1;
+				map[frog.x][frog.y] = '0' ;
+			}
+		}
 		/*  Check game's status  */
-		/*  Print the map on the screen  */
 		system("clear");
 		if(*log_no % 2 == 0){
 			map[*log_no+1][log_pos[*log_no]] = ' ';
@@ -76,6 +107,7 @@ void *logs_move( void *t ){
 			map[*log_no+1][(log_pos[*log_no] + 14) % 49] = ' ';
 			log_pos[*log_no] = (log_pos[*log_no] - 1) % 49;
 		}
+		/*  Print the map on the screen  */
 		for( i = 0; i <= ROW; ++i)	
 			puts( map[i] );
 		pthread_mutex_unlock(&count_mutex);
