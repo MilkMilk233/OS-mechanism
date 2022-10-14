@@ -22,7 +22,9 @@ struct Node{
 char map[ROW+10][COLUMN] ; 
 pthread_mutex_t count_mutex;
 pthread_cond_t count_threshold_cv;
-int thread_ids[10] = {0,1,2,3,4,5,6,7,8,9};
+int thread_ids[9] = {0,1,2,3,4,5,6,7,8};
+int log_pos[9];
+
 
 // Determine a keyboard is hit or not. If yes, return 1. If not, return 0. 
 int kbhit(void){
@@ -55,18 +57,34 @@ int kbhit(void){
 
 
 void *logs_move( void *t ){
-
 	/*  Move the logs  */
 	int i = 0;
-	int *my_id = (int*)t;
+	int *log_no = (int*)t;
+	for(int k = 0; k < 5; k++){
+		pthread_mutex_lock(&count_mutex);
+		/*  Check keyboard hits, to change frog's position or quit the game. */
+		/*  Check game's status  */
+		/*  Print the map on the screen  */
+		system("clear");
+		if(*log_no % 2 == 0){
+			map[*log_no+1][log_pos[*log_no]] = ' ';
+			map[*log_no+1][(log_pos[*log_no] + 15) % 49] = '=';
+			log_pos[*log_no] = (log_pos[*log_no] + 1) % 49;
+		}
+		else{
+			map[*log_no+1][(log_pos[*log_no] - 1) % 49] = '=';
+			map[*log_no+1][(log_pos[*log_no] + 14) % 49] = ' ';
+			log_pos[*log_no] = (log_pos[*log_no] - 1) % 49;
+		}
+		for( i = 0; i <= ROW; ++i)	
+			puts( map[i] );
+		pthread_mutex_unlock(&count_mutex);
+		sleep(1);
+	}
+	pthread_exit(NULL);
+}
 
-	/*  Check keyboard hits, to change frog's position or quit the game. */
-
-	
-	/*  Check game's status  */
-
-
-	/*  Print the map on the screen  */
+void *check_status( void *t ){
 
 }
 
@@ -74,10 +92,21 @@ int main( int argc, char *argv[] ){
 
 	// Initialize the river map and frog's starting position
 	memset( map , 0, sizeof( map ) ) ;
-	int i , j ; 
+	int i , j , random_num; 
+
+	// Initialize the position of the logs.
+	for( i = 0; i < 9; i++){
+		log_pos[i] = rand() % 49;
+		printf("%d\n",log_pos[i]);
+	}
+	
+	// Draw logs initially.
 	for( i = 1; i < ROW; ++i ){	
 		for( j = 0; j < COLUMN - 1; ++j )	
 			map[i][j] = ' ' ;  
+		for( j = log_pos[i-1] ; j < log_pos[i-1] + 15; ++j)
+			// printf("i = %d, j = %d, log_pos[i-1]=%d\n",i,j,log_pos[i-1]);
+			map[i][j%49] = '=' ;
 	}	
 
 	for( j = 0; j < COLUMN - 1; ++j )	
@@ -103,11 +132,13 @@ int main( int argc, char *argv[] ){
 	pthread_cond_init(&count_threshold_cv, NULL);
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-	for( i = 0, i < 9; i++){
+	for( i = 0; i < 9; i++) {
 		pthread_create(&threads[i],&attr, logs_move, (void*)&thread_ids[i]);
 	}
-	
-
+	for( i = 0; i < 9; i++) {
+		pthread_join(threads[i], NULL);
+	}
+	printf("Main function ends.\n");
 
 	// Clean up and exit
 	pthread_attr_destroy(&attr);
@@ -117,7 +148,7 @@ int main( int argc, char *argv[] ){
 
 	/*  Display the output for user: win, lose or quit.  */
 	system("clear");
-	puts("Game Over!")
+	puts("Game Over!");
 
 	return 0;
 
