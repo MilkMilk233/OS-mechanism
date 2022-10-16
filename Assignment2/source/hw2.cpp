@@ -85,19 +85,19 @@ void *logs_move( void *t ){
 			else if(key_response == 'a' || key_response == 'A'){
 				clean_original_path();
 				frog.y -= 1;
-				if(map[frog.x][frog.y] == ' ') pthread_cond_signal(&count_threshold_cv);
+				if(map[frog.x][frog.y] == ' ' || frog.y == -1) pthread_cond_signal(&count_threshold_cv);
 				map[frog.x][frog.y] = '0' ;
 			}
 			else if(key_response == 's' || key_response == 'S'){
 				clean_original_path();
 				frog.x += 1;
-				if(map[frog.x][frog.y] == ' ') pthread_cond_signal(&count_threshold_cv);
+				if(map[frog.x][frog.y] == ' ' || frog.x == 11) pthread_cond_signal(&count_threshold_cv);
 				map[frog.x][frog.y] = '0' ;
 			}
 			else if(key_response == 'd' || key_response == 'D'){
 				clean_original_path();
 				frog.y += 1;
-				if(map[frog.x][frog.y] == ' ') pthread_cond_signal(&count_threshold_cv);
+				if(map[frog.x][frog.y] == ' '|| frog.y == 49) pthread_cond_signal(&count_threshold_cv);
 				map[frog.x][frog.y] = '0' ;
 			}
 			else if(key_response == 'q' || key_response == 'Q'){
@@ -172,7 +172,6 @@ int main( int argc, char *argv[] ){
 	// Initialize the position of the logs.
 	for( i = 0; i < 9; i++){
 		log_pos[i] = rand() % 49;
-		printf("%d\n",log_pos[i]);
 	}
 	
 	// Draw logs initially.
