@@ -135,7 +135,7 @@ void *logs_move( void *t ){
 		}
 		pthread_mutex_unlock(&count_mutex);
 		// 300000us
-		usleep(200000);
+		usleep(100000);
 	}
 	pthread_exit(NULL);
 }
@@ -144,11 +144,12 @@ void *print_pic( void *t ){
 	int i, k;
 	while(stop_signal){
 		pthread_mutex_lock(&count_mutex);
-		system("clear");
+		// system("clear");
+		printf("\033[2J\n");
 		for(i = 0; i <= ROW; ++i)	
 			puts( map[i] );
 		pthread_mutex_unlock(&count_mutex);
-		usleep(200000);
+		usleep(100000);
 	}
 	pthread_exit(NULL);
 }
@@ -168,6 +169,11 @@ int main( int argc, char *argv[] ){
 	// Initialize the river map and frog's starting position
 	memset( map , 0, sizeof( map ) ) ;
 	int i , j , random_num; 
+
+	// Configure command line output.
+	printf("\033[?25l");
+	// printf("\033[36m");	// Font color
+	// printf("\033[43m");	// Background color
 
 	// Initialize the position of the logs.
 	for( i = 0; i < 9; i++){
@@ -223,7 +229,8 @@ int main( int argc, char *argv[] ){
 	pthread_mutex_destroy(&count_mutex);
 	pthread_cond_destroy(&count_threshold_cv);
 	/*  Display the output for user: win, lose or quit.  */
-	system("clear");
+	printf("\033[0m");	// Clean all color configuration
+	printf("\033[2J");	// Clean the screen
 	if(frog.x == 0){
 		puts("You win");
 	}

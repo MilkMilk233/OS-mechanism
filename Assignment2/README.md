@@ -29,3 +29,5 @@ g++ hw2.cpp -lpthread
 ```
 
 ## Bonus Part
+
+思路：开一个queue用来装任务，然后所有的线程轮流提请任务列表。
