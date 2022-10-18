@@ -7,6 +7,7 @@
 typedef struct my_item {
   /* TODO: More stuff here, maybe? */
   int args;
+  void (*handler)(int);
   struct my_item *next;
   struct my_item *prev;
 } my_item_t;
