@@ -11,7 +11,7 @@ int *thread_ids;
 pthread_mutex_t count_mutex;
 pthread_attr_t attr;
 
-// 循环运行，不停的查找公共queue内是否有空余的任务，若有，则处理；若无则自杀。
+// Keep running, every time check if the queue is empty, if yes, skip it. Otherwise, handle it.
 void *thread_run( void *t ){
     while(1){
         pthread_mutex_lock(&count_mutex);
