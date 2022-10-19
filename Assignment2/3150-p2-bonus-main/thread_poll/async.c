@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -12,7 +11,8 @@ pthread_mutex_t count_mutex;
 pthread_attr_t attr;
 pthread_cond_t count_threshold_cv;
 
-// Keep running, every time check if the queue is empty, if yes, skip it. Otherwise, handle it.
+/*  Every time since it wakes up, check if the queue is empty, 
+    if yes, go to sleep. Otherwise, fetch data from queue, handle it.   */
 void *thread_run( void *t ){
     while(1){
         pthread_mutex_lock(&count_mutex);
@@ -37,8 +37,10 @@ void *thread_run( void *t ){
             handler(args);
 
         }
+        // If there are no task in the quit, go to sleep.
         else{
             pthread_cond_wait(&count_threshold_cv, &count_mutex);
+            // Wake up and get into the next loop.
             pthread_mutex_unlock(&count_mutex);
         }
     }
@@ -84,5 +86,6 @@ void async_run(void (*hanlder)(int), int args) {
     task_list->size++;
     task_list->tail = item;
     pthread_mutex_unlock(&count_mutex);
+    // Sending signal to wake up the sleeping thread(if any).
     pthread_cond_signal(&count_threshold_cv);
 }

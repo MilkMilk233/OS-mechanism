@@ -145,7 +145,8 @@ void *print_pic( void *t ){
 	while(stop_signal){
 		pthread_mutex_lock(&count_mutex);
 		// system("clear");
-		printf("\033[2J\n");
+		printf("\033[H\033[2J");
+		// printf("\033[2J\n");
 		for(i = 0; i <= ROW; ++i)	
 			puts( map[i] );
 		pthread_mutex_unlock(&count_mutex);
@@ -230,7 +231,7 @@ int main( int argc, char *argv[] ){
 	pthread_cond_destroy(&count_threshold_cv);
 	/*  Display the output for user: win, lose or quit.  */
 	printf("\033[0m");	// Clean all color configuration
-	printf("\033[2J");	// Clean the screen
+	printf("\033[H\033[2J");	// Clean the screen
 	if(frog.x == 0){
 		puts("You win");
 	}
