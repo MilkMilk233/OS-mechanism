@@ -10,6 +10,7 @@ pthread_t *threads;
 int *thread_ids;
 pthread_mutex_t count_mutex;
 pthread_attr_t attr;
+pthread_cond_t count_threshold_cv;
 
 // Keep running, every time check if the queue is empty, if yes, skip it. Otherwise, handle it.
 void *thread_run( void *t ){
@@ -37,6 +38,7 @@ void *thread_run( void *t ){
 
         }
         else{
+            pthread_cond_wait(&count_threshold_cv, &count_mutex);
             pthread_mutex_unlock(&count_mutex);
         }
     }
@@ -49,6 +51,7 @@ void async_init(int num_threads) {
     // Initialize the lock.
     pthread_mutex_init(&count_mutex, NULL);
     pthread_attr_init(&attr);
+    pthread_cond_init(&count_threshold_cv, NULL);
     // Allocate Memory
     task_list = (my_queue_t *)malloc(sizeof(my_queue_t));
     task_list->size = 0;
@@ -81,4 +84,5 @@ void async_run(void (*hanlder)(int), int args) {
     task_list->size++;
     task_list->tail = item;
     pthread_mutex_unlock(&count_mutex);
+    pthread_cond_signal(&count_threshold_cv);
 }
