@@ -147,6 +147,11 @@ If you wanna see the ***Video for DEMO***, click [**HERE**](https://video.milkmi
 
 With AB benchmark test
 
+```bash
+./httpserver --files files/ --port 8000 --num-threads 10
+ab -n 5000 -c 10 http://localhost:8000/
+```
+
 10 Threads, 5000 requests:
 
 ![2-5](http://video.milkmilk.cloud/static/CSC3150/hw2-5.jpg)
