@@ -125,6 +125,11 @@ make
 cd ~/3150-p2-bonus-main/thread_poll/
 make
 ./httpserver --files files/ --port 8000 --num-threads 10
+```
+
+Open up a new terminal
+
+```bash
 ab -n 5000 -c 10 http://localhost:8000/
 ```
 
@@ -145,12 +150,19 @@ If you wanna see the ***Video for DEMO***, click [**HERE**](https://video.milkmi
 
 ### Bonus
 
-With AB benchmark test
+With AB benchmark test:
 
 ```bash
 ./httpserver --files files/ --port 8000 --num-threads 10
+```
+
+Open up a new terminal:
+
+```bash
 ab -n 5000 -c 10 http://localhost:8000/
 ```
+
+
 
 10 Threads, 5000 requests:
 
