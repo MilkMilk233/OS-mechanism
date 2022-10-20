@@ -277,9 +277,9 @@ void serve_forever(int *socket_number, void (*request_handler)(int)) {
             continue;
         }
 
-        printf("Accepted connection from %s on port %d, args = %d\n",
+        printf("Accepted connection from %s on port %d\n",
                 inet_ntoa(client_address.sin_addr),
-                client_address.sin_port, client_socket_number);
+                client_address.sin_port);
         async_run(request_handler,client_socket_number);
     }
 
