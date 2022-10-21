@@ -114,7 +114,7 @@ sudo apt-get install libncurses5-dev
 ### Main
 
 ```bash
-cd ~/source
+cd ~/Assignment_2_120090222/source
 make
 ./a.out
 ```
@@ -122,7 +122,7 @@ make
 ### Bonus
 
 ```bash
-cd ~/3150-p2-bonus-main/thread_poll/
+cd ~/Assignment_2_120090222/3150-p2-bonus-main/thread_poll/
 make
 ./httpserver --files files/ --port 8000 --num-threads 10
 ```
