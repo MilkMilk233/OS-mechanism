@@ -1,6 +1,7 @@
 ﻿#include "virtual_memory.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <stdio.h>
 
 __device__ void init_invert_page_table(VirtualMemory *vm) {
 
@@ -37,7 +38,7 @@ __device__ void vm_init(VirtualMemory *vm, uchar *buffer, uchar *storage,
   init_invert_page_table(vm);
 }
 
-__device__ int page_replacement(VirtualMemory *vm){
+__device__ int page_replacement(VirtualMemory *vm, u32 va_base){
   // 1. Swap out victim page.
   *vm->pagefault_num_ptr += 1;
   u32 min = 0xffffffff;
@@ -48,19 +49,29 @@ __device__ int page_replacement(VirtualMemory *vm){
       victim_pn = i;
     }
   }
-  u32 victim_pa = vm->invert_page_table[victim_pn] & 0x00000FFF;
-  u32 victim_va = (vm->invert_page_table[victim_pn] & 0x00FFF000) >> 12;
+  u32 victim_pa_base = vm->invert_page_table[victim_pn] & 0x00000FFF;
+  u32 victim_va_base = (vm->invert_page_table[victim_pn] & 0x00FFF000) >> 12;
   for( int i = 0; i < vm->PAGESIZE; i++){
-    vm->storage[victim_va + i] = vm->buffer[victim_pa + i];
+    vm->storage[(victim_va_base << 5) + i] = vm->buffer[(victim_pa_base << 5) + i];
   }
   // 2. Change PTE to invalid.
   vm->invert_page_table[victim_pn] |= 0x80000000;
+  // 3. Swap the desired page in
+  for( int i = 0; i < vm->PAGESIZE; i++){
+    vm->buffer[(victim_pa_base << 5) + i] = vm->storage[(va_base << 5) + i];
+  }
+  // 4. Reset the page for new table
+  // + Thread ID
+  vm->invert_page_table[victim_pn] = (va_base << 12) + victim_pa_base;
   return victim_pn;
 }
 
 __device__ uchar vm_read(VirtualMemory *vm, u32 addr) {
   /* Complate vm_read function to read single element from data buffer */
-  if(addr > (1 << 17)) return '0';
+  if(addr > (1 << 17)){
+    printf("Error\n");
+    return '0';
+  } 
   bool found = false;
   u32 va_base = addr >> 5;
   u32 va_offset = addr & 0x0000001f;
@@ -90,26 +101,23 @@ __device__ uchar vm_read(VirtualMemory *vm, u32 addr) {
     // No empty space in buffer, swap by LRU Algorithm
     if(empty_pn == -1){
       // Doing place replacement.
-      page_replacement(vm);
+      page_replacement(vm, va_base);
       return vm_read(vm, addr);
     }
     // Still some empty space in buffer, rewrite that PTE
     else{
-      pa = (empty_pn << 5) + va_offset;
-      // + Possible thread ID
-      vm->invert_page_table[empty_pn] = (va_base << 12) + pa_base;
-      vm->invert_page_table[empty_pn + vm->PAGE_ENTRIES] = 0xffffffff;
-      vm->buffer[pa] = vm->storage[addr];
-      return vm->buffer[pa];
+      printf("Error in reading empty blocks!!!\n");
     }
   }
-
-  return 123; //TODO
 }
 
 __device__ void vm_write(VirtualMemory *vm, u32 addr, uchar value) {
   /* Complete vm_write function to write value into data buffer */
-  if(addr > (1 << 17)) return;
+  if(addr > (1 << 17)){
+    printf("Error\n");
+    return;
+  } 
+  // printf("Tag1\n");
   bool found = false;
   u32 va_base = addr >> 5;
   u32 va_offset = addr & 0x0000001f;
@@ -120,6 +128,7 @@ __device__ void vm_write(VirtualMemory *vm, u32 addr, uchar value) {
     u32 pte_va_base = (vm->invert_page_table[i] & 0x00FFF000) >> 12;
     u32 pte_valid_bit = vm->invert_page_table[i] & 0x80000000;
     if(pte_va_base == va_base && pte_valid_bit == 0){
+      // printf("Tag2\n");
       pa_base = vm->invert_page_table[i] & 0x00000FFF;
       found = true;
       vm->invert_page_table[i + vm->PAGE_ENTRIES] = 0xffffffff;
@@ -133,20 +142,24 @@ __device__ void vm_write(VirtualMemory *vm, u32 addr, uchar value) {
   if(found){
     pa = (pa_base << 5) + va_offset;
     vm->buffer[pa] = value;
+    // printf("Tag3\n");
   }
   // Not in buffer
   else{
     // No empty space in buffer, swap by LRU Algorithm
     if(empty_pn == -1){
       // Doing place replacement.
-      page_replacement(vm);
+      // printf("Tag4\n");
+      page_replacement(vm, va_base);
       return vm_write(vm, addr, value);
     }
     // Still some empty space in buffer, rewrite that PTE
     else{
+      // Assert it's in the initialization period.
+      // if((int)addr < 3000) printf("Entering loop at %d\n",addr);
       pa = (empty_pn << 5) + va_offset;
       // + Possible thread ID
-      vm->invert_page_table[empty_pn] = (va_base << 12) + pa_base;
+      vm->invert_page_table[empty_pn] = (va_base << 12) + empty_pn;
       vm->invert_page_table[empty_pn + vm->PAGE_ENTRIES] = 0xffffffff;
       vm->buffer[pa] = value;
     }
@@ -158,9 +171,8 @@ __device__ void vm_snapshot(VirtualMemory *vm, uchar *results, int offset,
                             int input_size) {
   /* Complete snapshot function togther with vm_read to load elements from data
    * to result buffer */
-   for(int i = 0; i < input_size; i++){
-    results[i] = vm_read(vm, (u32)i);
-   }
+  // printf("The 2nd value is %d\n",vm_read(vm, 0));
+  for(int i = 0; i < input_size; i++){
+    results[i] = vm_read(vm, i);
+  }
 }
-
-// W T M ZHI JIE LIE KAI [broken_face]
