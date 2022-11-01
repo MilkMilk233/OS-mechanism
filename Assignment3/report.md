@@ -77,6 +77,7 @@ Assert you run on CSC4005 HPC cluster.
 
 ```sh
 cd ./source/
+nvcc --relocatable-device-code=true main.cu user_program.cu virtual_memory.cu -o test
 bash slurm.sh
 ```
 
@@ -86,6 +87,7 @@ Assert you run on CSC4005 HPC cluster.
 
 ```sh
 cd ./bonus/
+nvcc --relocatable-device-code=true main.cu user_program.cu virtual_memory.cu -o test
 bash slurm.sh
 ```
 
@@ -105,11 +107,13 @@ Traditional CPU physical memory has the characteristics of **high speed** and **
 
 As mentioned above, we need to keep the frequently used data blocks in physical memory, while the infrequently used data blocks are stored in secondary memory. So how do we know which data stores should be placed? The answer is that we use a structure called **page table** to store information. When data is stored in the physical memory, the page table will also store the credentials of the data. We can judge whether the data is stored in the physical memory according to whether the required data exists in the page table. **If it does not exist, it is in secondary storage**. Therefore, the logic becomes clear: when we need a data block, we first send a request to the page table to see whether the data block is stored in physical memory. If we do not find the results in the page table, we need to spend more time to go deep into the secondary storage to find the data we need.
 
+In addition, to simulate the real situation, I also implemented a **secondary storage page table**. When the program needs to enter the secondary storage to obtain data, it will search from the secondary storage table and convert the corresponding virtual address to the location where the data is stored in the secondary storage.
+
 #### Swap strategy
 
 We will use the **LRU (Least recent used) algorithm** to maintain the page table and ensure that data is used frequently by the CPU. To put it simply, when we cannot find a target in the physical memory and need to access the secondary memory, we first select a data block that is **least frequently used** from the current page table and **put it back into the secondary memory**; Then **exchange** a data block that we need in the secondary memory **back** **to the original location**.
 
-![swap](https://video.milkmilk.cloud/static/CSC3150/swap.jpg)
+![illustrator1](https://video.milkmilk.cloud/static/CSC3150/illustrator1.jpg)
 
 #### PTE, From Virtual Address(VA) to Physical Memory
 
@@ -129,28 +133,30 @@ The following table tells us the size limit of each part of this task:
 
 ![swap](https://video.milkmilk.cloud/static/CSC3150/size.jpg)
 
-**From this table, we can clearly see our task goal: we need to store all 128KB of input into memory (of course, it is unrealistic to store all 128KB in physical memory, because it is only 32KB in size, so the excess part needs to be stored in secondary storage), and then extract 128KB of data from memory into output.**
+**From this table, we can clearly see our task goal: we need to store up to 160KB of input into memory (of course, it is unrealistic to store all 128KB in physical memory, because it is only 32KB in size, so the excess part needs to be stored in secondary storage), and then extract 128KB of data from memory into output.**
 
 Based on the flow chart and existing information, we can know:
 
-- The physical memory is only 32KB in size and can only hold 1/4 of the input data. The remaining 3/4 are destined to be placed in the secondary memory.
+- The physical memory is only 32KB in size and can only hold 1/5 of the input data. The remaining 4/5 are destined to be placed in the secondary memory.
 - We split the data by 32 bytes. Each small piece of data is the smallest unit of exchange, which we call "page". For 128KB input, it can be divided into 4096 pages, and 1024 of them will have the opportunity to be placed in physical storage.
-- For the 1024 pages stored on the physical storage, we will create a page table containing 1024 PTEs to manage their information.
+- For the 1024 pages stored on the physical storage, we will create a page table containing 1024 PTEs to manage their information. And for the 4096 pages stored on the disk storage, we will create a page table containing 4096 PTEs to manage their information.
 - Since the total memory allocated to the Page table is 16KB, the memory allocated to each PTE is (16KB/1024) = 16 bytes = 4* unsigned integer(32 bit).
 
 Let's talk about how I designed PTE to achieve all the set goals. I only use 1/2 of the specified limit, that is, each PTE uses two unsigned integers (2 * 32bit) to record the necessary information.
 
-First unsigned integer: [32bits] -> [1*Valid bit(invalid = 1) | 7\* Thread Number | 12\* Virtual Address(base) | 12\* Physical Address(base) ]
+First unsigned integer: [32bits] -> [1*Valid bit(invalid = 1) | 11\* Unused bit | 4\* Thread Number | 16\* Virtual Address ]
 
 First unsigned integer: [32bits] -> [LRU Ranking]
 
-*(Since 128KB input/output can be divided into 4096 pages (i.e. 2 ^ 12), we only need 12 digits to represent the number of each page (i.e. Virtual address))*
+*(Since 160KB input/output can be divided into 5120 pages (i.e. 2 ^ 12 + 2^10), we only need 13 digits to represent the number of each page (i.e. Virtual address))*
 
 #### Workflow: Read / Write / Snapshot
 
+![illustrator2](https://video.milkmilk.cloud/static/CSC3150/illustrator2.jpg)
 
+------
 
-
+![illustrator3](https://video.milkmilk.cloud/static/CSC3150/illustrator3.jpg)
 
 ------
 
@@ -158,27 +164,59 @@ First unsigned integer: [32bits] -> [LRU Ranking]
 
 ### Bonus
 
+For the bonus part, I made such improvements based on main part:
 
+- Share inverted page table between threads
+- Expand the secondary storage from 128KB to 512KB
+- Implement non-preemptive priority scheduling, only one thread can be executed at a time to prevent data race
+- Add thread number to the PTE to prevent data misuse
+
+I used `__syncthreads();` to align each threads, a bit similar to `MPI_Barrier` in MPI programming. And I used `threadIdx.x` to distinguish different threads, and let them respond one by one.
 
 ## Page fault number, also how does it come out
 
+When we need to request a data that is not in the physical (shared) memory, a page fault will occur.
+
+**As mentioned above**, at this time, we need to go deep into the secondary storage to find the pages we need and exchange them with the least frequently used pages stored in physical memory.
+
+For example, when we write input between [0, 1023*32], the PTEs are not full in physical memory. But when we write another (1023\*32+1)th input, the page fault will occur, and the 1st page(least used one) in the physical memory will be put back to the secondary memory, while the 1st page in the secondary memory will be put to the position of the 1st page in the physical memory.
+
+## Screenshot of the program output
+
 ### Main
 
-```sh
-[120090222@node21 source]$ bash slurm.sh 
-input size: 131072
-pagefault number is 8193
-```
+Testcase #1, up to 128KB occupancy in total
 
+![illustrator2](https://video.milkmilk.cloud/static/CSC3150/testcase1.jpg)
 
+Testcase #2, up to 160KB occupancy in total
+
+![illustrator2](https://video.milkmilk.cloud/static/CSC3150/testcase2.jpg)
 
 ### Bonus
 
-```sh
-```
+Testcase #1, up to 128KB*4 occupancy in total
+
+![illustrator2](https://video.milkmilk.cloud/static/CSC3150/testcase3.jpg)
 
 
 
 ## Problems I met in this assignment, and the solutions
 
-First, due to my early start, the unclear instructions make me 
+- It took me a long time to figure out what page is, and then I thought for a long time about how to apply the page mechanism to this program.
+- At first, I didn't know the memory limit of the secondary memory table so I posted questions on the forum, and received positive and quick response.
+- I used one-to-one mapping between VA and storage, and made the first draft of 128KB version. However, with the further clarification of the task, the total memory expanded to 160KB. I had to override the rewrite and refactor more than 70% of the code.
+
+- I once tried to complete the physical memory page table with only 4 KB, that is, 1/4 of the memory limit. But considering the possibility that the LRU index can grow indefinitely, I gave up the aggressive approach, chose a more conservative implementation method, which uses 8 KB, that is, 1/4 of the memory limit to complete the job.
+
+
+
+## What did I learn from this assignment?
+
+- I have a slight glance at CUDA programming.
+- I learned some important feature about CUDA programming, like the block, threads' arrangement, memory sharing, variable and function type etc.
+- I learned the mechanism of the paging\paging table\inverted paging table.
+- I gain experience in handling programs with complex states.
+- Debug skills going up. 
+- More practice. 
+- Project experience.
