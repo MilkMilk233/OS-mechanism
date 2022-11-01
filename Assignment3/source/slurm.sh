@@ -13,7 +13,6 @@
 
 ##Compile the cuda script using the nvcc compiler
 nvcc --relocatable-device-code=true main.cu user_program.cu virtual_memory.cu -o test
-clear
 ## Run the executable file
-srun ./test > result.out
+srun ./test
 

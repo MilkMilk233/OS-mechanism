@@ -42,58 +42,44 @@ __device__ void vm_init(VirtualMemory *vm, uchar *buffer, uchar *storage,
 
   // before first vm_write or vm_read
   if(threadIdx.x == 0){
-    printf("Initialization IN PROGRESS\n");
     init_invert_page_table(vm);
     init_storage_page_table(vm);
   }
 }
 
 __device__ int page_replacement(VirtualMemory *vm, u32 va_base){
-  // printf("Tag 3, va_base = %d,vm->STORAGE_TABLE_SIZE = %d, vm->THREAD_NUM= %d \n",va_base,vm->STORAGE_TABLE_SIZE,vm->THREAD_NUM);
-  // LRU decrease by 1
-  for(int j = 0; j < vm->PAGE_ENTRIES; j++) vm->invert_page_table[j] -= 1;
   // 1. Find the victim Page Table Entry (PTE)
   u32 min = 0xffffffff;
   u32 victim_pa_base, current_LRU, victim_sa_base, current_ste;
-  u32 unit_length = (vm->STORAGE_TABLE_SIZE / vm->THREAD_NUM);
   for (u32 i = 0; i < vm->PAGE_ENTRIES; i++) {
-    current_LRU = vm->invert_page_table[i] & 0x00000fff;
+    current_LRU = vm->invert_page_table[i + vm->PAGE_ENTRIES];
     if(current_LRU < min){
       min = current_LRU;
       victim_pa_base = i;
     }
   }
-  // printf("Tag 4, threadIdx.x=%d, lower_bound = %d, upper_bound = %d \n",threadIdx.x, unit_length* threadIdx.x, unit_length * (threadIdx.x + 1));
   // 2. Find the victim Storage Table Entry (STE)
-  for( int i = unit_length * threadIdx.x; i < unit_length * (threadIdx.x + 1); i++){
+  for( int i = 0; i < vm->STORAGE_SIZE; i++){
     current_ste = vm->storage_page_table[i];
-    if((current_ste & 0x0000ffff) == va_base){
-      // printf("va_base = %d\n",va_base);
+    if((current_ste & 0x0000ffff) == va_base && ((current_ste & 0x000f0000) >> 16) == threadIdx.x){
       victim_sa_base = i;
       break;
     }
     else if((current_ste & 0x80000000) == 0x80000000){
-      // printf("Found invalid victim_sa_base = %d\n",victim_sa_base);
       victim_sa_base = i;
       break;
     } 
   }
-  // printf("Drop LRU %d, replace with storage %d whose old VA is %d\n",victim_pa_base, victim_sa_base, va_base);
-  // printf("Tag 5, current_ste = %d\n",current_ste);
   // 3. Set PTE and STE as valid.
-  vm->invert_page_table[victim_pa_base] = (threadIdx.x << 28) + (va_base << 12) + 0x00000fff;
-  vm->storage_page_table[victim_sa_base] &= 0x7fffffff;
+  vm->storage_page_table[victim_sa_base] = vm->invert_page_table[victim_pa_base];
+  vm->invert_page_table[victim_pa_base] = (threadIdx.x << 16) + va_base;
+  vm->invert_page_table[victim_pa_base + vm->PAGE_ENTRIES] = 0xffffffff;
   // 4. Exchange the buffer / storage
   for( int i = 0; i < vm->PAGESIZE; i++){
-    // printf("Tag 7, victim_sa_base = %d\n",victim_sa_base);
     uchar temp = vm->storage[(victim_sa_base << 5) + i];
-    // printf("Tag 8\n");
     vm->storage[(victim_sa_base << 5) + i] = vm->buffer[(victim_pa_base << 5) + i];
-    // printf("Tag 9\n");
     vm->buffer[(victim_pa_base << 5) + i] = temp;
-    // printf("Tag 10\n");
   }
-  // printf("Tag 6\n");
   return victim_pa_base;
 }
 
@@ -107,13 +93,15 @@ __device__ uchar vm_read(VirtualMemory *vm, u32 addr) {
   u32 va_offset = addr & 0x0000001f;
   u32 pa, pa_base;
   int empty_pn = -1;
+  // LRU decrease by 1
+  for(int j = 0; j < vm->PAGE_ENTRIES; j++) vm->invert_page_table[j + vm->PAGE_ENTRIES] -= 1;
   // See if it's inside physical memory
   for(int i = 0; i < vm->PAGE_ENTRIES; i++){
-    u32 pte_va_base = (vm->invert_page_table[i] & 0x0ffff000) >> 12;
+    u32 pte_va_base = (vm->invert_page_table[i] & 0x0000ffff);
     u32 pte_valid_bit = (vm->invert_page_table[i] & 0x80000000) >> 31;
-    u32 pte_thread = (vm->invert_page_table[i] & 0x70000000) >> 28;
+    u32 pte_thread = (vm->invert_page_table[i] & 0x000f0000) >> 16;
     if(pte_va_base == va_base && pte_valid_bit == 0 && pte_thread == threadIdx.x){
-      vm->invert_page_table[i] |= 0x00000fff;
+      vm->invert_page_table[i + vm->PAGE_ENTRIES] = 0xffffffff;
       pa = (i << 5) + va_offset;
       return vm->buffer[pa];
     }
@@ -148,20 +136,16 @@ __device__ void vm_write(VirtualMemory *vm, u32 addr, uchar value) {
   u32 va_offset = addr & 0x0000001f;
   u32 pa, pa_base, pte_va_base, pte_valid_bit, pte_thread;
   int empty_pn = -1;
+  // LRU decrease by 1
+  for(int j = 0; j < vm->PAGE_ENTRIES; j++) vm->invert_page_table[j + vm->PAGE_ENTRIES] -= 1;
   // printf("vm->invert_page_table[128]=%d\n",vm->invert_page_table[128]);
   for(int i = 0; i < vm->PAGE_ENTRIES; i++){
-    pte_va_base = (vm->invert_page_table[i] & 0x0ffff000) >> 12;
+    pte_va_base = (vm->invert_page_table[i] & 0x0000ffff);
     pte_valid_bit = (vm->invert_page_table[i] & 0x80000000) >> 31;
-    pte_thread = (vm->invert_page_table[i] & 0x70000000) >> 28;
-    // if(pte_va_base > 1150){
-    //   printf("%d th\n",i);
-    //   printf("pte_va_base=%d,pte_valid_bit=%d, pte_thread=%d\n",pte_va_base,pte_valid_bit,pte_thread);
-    //   printf("pte = %d, va_base=%d,threadIdx.x=%d\n",vm->invert_page_table[i],va_base,threadIdx.x);
-    // }
+    pte_thread = (vm->invert_page_table[i] & 0x000f0000) >> 16;
     if(pte_va_base == va_base && pte_valid_bit == 0 && pte_thread == threadIdx.x){
       // Founded in physical memory
-      // printf("Founded. va_base = %d\n", va_base);
-      vm->invert_page_table[i] |= 0x00000fff;
+      vm->invert_page_table[i + vm->PAGE_ENTRIES] = 0xffffffff;
       pa = (i << 5) + va_offset;
       vm->buffer[pa] = value;
       // LRU decrease by 1
@@ -173,7 +157,6 @@ __device__ void vm_write(VirtualMemory *vm, u32 addr, uchar value) {
       break;
     }
   }
-  printf("Can't find page in physical memory. empty_pn = %d, va_base =%d\n", empty_pn, va_base);
   // Not in physical memory, do swapping
   *vm->pagefault_num_ptr += 1;
   // No empty space in buffer, drop one PTE by LRU Algorithm
@@ -182,10 +165,12 @@ __device__ void vm_write(VirtualMemory *vm, u32 addr, uchar value) {
   }
   // Found empty space in physical memory, ususally happens in initialization.
   else{
-    vm->invert_page_table[empty_pn] = (threadIdx.x << 28) + (va_base << 12) + 0x00000fff;
-    // printf("Here we modify PTE[%d] as %d\n",empty_pn, ((threadIdx.x << 28) + (va_base << 12) + 0x00000fff));
+    pa_base = empty_pn;
+    vm->invert_page_table[empty_pn] = (threadIdx.x << 16) + va_base;
+    vm->invert_page_table[empty_pn + vm->PAGE_ENTRIES] = 0xffffffff;
   }
   pa = (pa_base << 5) + va_offset;
+  // printf("Write value %d to %d\n",value, pa);
   vm->buffer[pa] = value;
 }
 
