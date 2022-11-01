@@ -178,7 +178,7 @@ __device__ void vm_snapshot(VirtualMemory *vm, uchar *results, int offset,
                             int input_size) {
   /* Complete snapshot function togther with vm_read to load elements from data
    * to result buffer */
-  for(int i = 0; i < input_size; i++){
+  for(int i = offset; i < offset + input_size; i++){
     results[i] = vm_read(vm, i);
   }
 }

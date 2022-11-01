@@ -9,7 +9,7 @@
 #SBATCH --ntasks=1  ## number of tasks (analyses) to run
 #SBATCH --gpus-per-task=1 # number of gpus per task
 #SBATCH --mem-per-gpu=100M # Memory allocated for the job
-#SBATCH --time=0-00:02:00  ## time for analysis (day-hour:min:sec)
+#SBATCH --time=0-00:10:00  ## time for analysis (day-hour:min:sec)
 
 ##Compile the cuda script using the nvcc compiler
 nvcc --relocatable-device-code=true main.cu user_program.cu virtual_memory.cu -o test
