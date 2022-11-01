@@ -12,7 +12,7 @@ __device__ void init_invert_page_table(VirtualMemory *vm) {
   for (int i = 0; i < vm->PAGE_ENTRIES; i++) {
     // Valid bit(invalid = 1) | 7* Thread Number | 12* Virtual Address | 12* Physical Address 
     vm->invert_page_table[i] = 0x80000000; 
-    vm->invert_page_table[i + vm->PAGE_ENTRIES] = 0xffffffff;    // 17* LRU ranking
+    vm->invert_page_table[i + vm->PAGE_ENTRIES] = 0xffffffff;    // 32* LRU ranking
   }
 }
 

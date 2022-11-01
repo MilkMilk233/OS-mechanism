@@ -11,22 +11,26 @@ typedef uint32_t u32;
 struct VirtualMemory {
   uchar *buffer;
   uchar *storage;
+  u32 *storage_page_table;
   u32 *invert_page_table;
   int *pagefault_num_ptr;
 
   int PAGESIZE;
   int INVERT_PAGE_TABLE_SIZE;
   int PHYSICAL_MEM_SIZE;
+  int STORAGE_TABLE_SIZE;
   int STORAGE_SIZE;
+  int STORAGE_ENTRIES;
   int PAGE_ENTRIES;
+  int THREAD_NUM;
 };
 
 // TODO
 __device__ void vm_init(VirtualMemory *vm, uchar *buffer, uchar *storage,
-                        u32 *invert_page_table, int *pagefault_num_ptr,
-                        int PAGESIZE, int INVERT_PAGE_TABLE_SIZE,
-                        int PHYSICAL_MEM_SIZE, int STORAGE_SIZE,
-                        int PAGE_ENTRIES);
+                        u32 *storage_page_table, u32 *invert_page_table, 
+                        int *pagefault_num_ptr, int PAGESIZE, int INVERT_PAGE_TABLE_SIZE,
+                        int PHYSICAL_MEM_SIZE, int STORAGE_SIZE, int PAGE_ENTRIES, 
+                        int STORAGE_TABLE_SIZE, int STORAGE_ENTRIES, int THREAD_NUM);
 __device__ uchar vm_read(VirtualMemory *vm, u32 addr);
 __device__ void vm_write(VirtualMemory *vm, u32 addr, uchar value);
 __device__ void vm_snapshot(VirtualMemory *vm, uchar *results, int offset,

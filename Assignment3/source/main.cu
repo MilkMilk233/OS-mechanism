@@ -9,14 +9,18 @@
 #define DATAFILE "./data.bin"
 #define OUTFILE "./snapshot.bin"
 
+// Thread number is 1
+#define THREAD_NUM 1
 // page size is 32bytes
 #define PAGE_SIZE (1 << 5)
 // 16 KB in page table
 #define INVERT_PAGE_TABLE_SIZE (1 << 14)
 // 32 KB in shared memory
 #define PHYSICAL_MEM_SIZE (1 << 15)
-// 128 KB in global memory
-#define STORAGE_SIZE (1 << 17)
+// 128 KB * thread number in global memory
+#define STORAGE_SIZE (1 << 17) * THREAD_NUM
+// 64 KB * thread number in storage page table
+#define STORAGE_TABLE_SIZE (1 << 16) * THREAD_NUM 
 
 //// count the pagefault times
 __device__ __managed__ int pagefault_num = 0;
@@ -28,7 +32,9 @@ __device__ __managed__ uchar input[STORAGE_SIZE];
 // memory allocation for virtual_memory
 // secondary memory
 __device__ __managed__ uchar storage[STORAGE_SIZE];
-// page table
+// secondary memory page table
+__device__ __managed__ u32 storage_pt[STORAGE_TABLE_SIZE];
+// inverted page table
 extern __shared__ u32 pt[];
 
 __device__ void user_program(VirtualMemory *vm, uchar *input, uchar *results,
@@ -41,9 +47,10 @@ __global__ void mykernel(int input_size) {
   __shared__ uchar data[PHYSICAL_MEM_SIZE];
 
   VirtualMemory vm;
-  vm_init(&vm, data, storage, pt, &pagefault_num, PAGE_SIZE,
+  vm_init(&vm, data, storage, storage_pt, pt, &pagefault_num, PAGE_SIZE,
           INVERT_PAGE_TABLE_SIZE, PHYSICAL_MEM_SIZE, STORAGE_SIZE,
-          PHYSICAL_MEM_SIZE / PAGE_SIZE);
+          PHYSICAL_MEM_SIZE / PAGE_SIZE, STORAGE_TABLE_SIZE, 
+          STORAGE_SIZE / PAGE_SIZE, THREAD_NUM);
 
   // user program the access pattern for testing paging
   user_program(&vm, input, results, input_size);
@@ -91,7 +98,7 @@ int main() {
   /* Launch kernel function in GPU, with single thread
   and dynamically allocate INVERT_PAGE_TABLE_SIZE bytes of share memory,
   which is used for variables declared as "extern __shared__" */
-  mykernel<<<1, 1, INVERT_PAGE_TABLE_SIZE>>>(input_size);
+  mykernel<<<1, THREAD_NUM, INVERT_PAGE_TABLE_SIZE>>>(input_size);
 
   cudaStatus = cudaGetLastError();
   if (cudaStatus != cudaSuccess) {
