@@ -9,7 +9,7 @@
 #define DATAFILE "./data.bin"
 #define OUTFILE "./snapshot.bin"
 
-// Thread number is 1
+// Thread number is 4
 #define THREAD_NUM 4
 // page size is 32bytes
 #define PAGE_SIZE (1 << 5)
@@ -57,6 +57,7 @@ __global__ void mykernel(int input_size) {
   for(int i = 0; i < THREAD_NUM; i++){
     if(i == threadIdx.x){
       user_program(&vm, input, results, input_size);
+      init_storage_page_table(&vm);
     }
     __syncthreads();
   }

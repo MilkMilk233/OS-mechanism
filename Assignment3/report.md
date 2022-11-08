@@ -164,14 +164,11 @@ First unsigned integer: [32bits] -> [LRU Ranking]
 
 ### Bonus
 
-For the bonus part, I made such improvements based on main part:
+I implemented bonus part on the basis of **Version 2**:
 
-- Share inverted page table between threads
-- Expand the secondary storage from 128KB to 512KB
-- Implement non-preemptive priority scheduling, only one thread can be executed at a time to prevent data race
-- Add thread number to the PTE to prevent data misuse
+>  The four threads perform the same and whole process of testcase1 four  times in total. This means that the addresses of the four threads are the same during  read and write operations. (The same task is done four times by four threads) In this  version, the next process overwrites the content of the previous process.
 
-I used `__syncthreads();` to align each threads, a bit similar to `MPI_Barrier` in MPI programming. And I used `threadIdx.x` to distinguish different threads, and let them respond one by one.
+
 
 ## Page fault number, also how does it come out
 
@@ -180,6 +177,17 @@ When we need to request a data that is not in the physical (shared) memory, a pa
 **As mentioned above**, at this time, we need to go deep into the secondary storage to find the pages we need and exchange them with the least frequently used pages stored in physical memory.
 
 For example, when we write input between [0, 1023*32], the PTEs are not full in physical memory. But when we write another (1023\*32+1)th input, the page fault will occur, and the 1st page(least used one) in the physical memory will be put back to the secondary memory, while the 1st page in the secondary memory will be put to the position of the 1st page in the physical memory.
+
+------
+
+For main part, 
+
+- Testcase #1 will produce 8193 page faults.
+- Testcase #2 will produce 9215 page faults.
+
+For bonus part (Version 2), 
+
+- Testcase #1 will produce 8193 * 4 = 32772 page faults.
 
 ## Screenshot of the program output
 

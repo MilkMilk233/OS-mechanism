@@ -26,6 +26,6 @@ __device__ void user_program(VirtualMemory *vm, uchar *input, uchar *results,
 //     vm_write(vm, i, input[i+32*1024]);
 //   // readout VM[32K, 160K] and output to snapshot.bin, which should be the same with data.bin
 //   vm_snapshot(vm, results, 32*1024, input_size);
-//   }
+// }
 
 // // expected page fault num: 9215

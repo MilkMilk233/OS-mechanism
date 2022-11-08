@@ -35,5 +35,6 @@ __device__ uchar vm_read(VirtualMemory *vm, u32 addr);
 __device__ void vm_write(VirtualMemory *vm, u32 addr, uchar value);
 __device__ void vm_snapshot(VirtualMemory *vm, uchar *results, int offset,
                             int input_size);
+__device__ void init_storage_page_table(VirtualMemory *vm);             
 
 #endif
