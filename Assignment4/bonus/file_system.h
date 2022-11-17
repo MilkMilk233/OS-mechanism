@@ -7,6 +7,7 @@
 
 typedef unsigned char uchar;
 typedef uint32_t u32;
+typedef uint16_t u16;   
 
 #define G_WRITE 1
 #define G_READ 0
