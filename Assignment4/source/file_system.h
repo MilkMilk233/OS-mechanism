@@ -59,7 +59,7 @@ __device__ void FCB_set_ctime(FileSystem *fs, u32 FCB_address, u32 value);
 __device__ void memcpy(uchar *target, uchar *source, int size);
 __device__ u32 memcmp(uchar *target, uchar *source, int size);
 __device__ void cover(FileSystem *fs, u32 layer, u32 start, u32 end);
-__device__ int VCB_modification(FileSystem *fs, u32 start, u32 size, u32 value);
+__device__ void VCB_modification(FileSystem *fs, u32 start, u32 size, u32 value);
 __device__ int VCB_Query(FileSystem *fs, u32 n);
 
 #endif

@@ -275,7 +275,7 @@ __device__ void cover(FileSystem *fs, u32 layer, u32 start, u32 end, u32 value){
   Input:
   Output: 
 */
-__device__ int VCB_modification(FileSystem *fs, u32 start, u32 size, u32 value){
+__device__ void VCB_modification(FileSystem *fs, u32 start, u32 size, u32 value){
   u32 start_i = start / 32;
   u32 start_j = start % 32;
   u32 end_i = (start + size) / 32;
@@ -308,12 +308,14 @@ __device__ u32 fs_open(FileSystem *fs, char *s, int op)
     FCB_read_filename(fs, FCB_address, file_name);
     if(memcmp(file_name,(uchar*)s,20) == 0){
       if(FCB_read_validbit(fs, FCB_address)){
+        printf("Found name \n");
         found = true;
         break;
       }
     }
   }
   if(!found){
+    printf("Not found name\n");
     // Initiate a new FCB block with size = 0
     for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
       if(FCB_read_validbit(fs, FCB_address) == 0){
@@ -353,7 +355,8 @@ __device__ void fs_read(FileSystem *fs, uchar *output, u32 size, u32 fp)
   u32 op = (fp & 0x80000000) >> 31;
   assert(op == 0);
   u32 FCB_block_size = FCB_read_size(fs, FCB_address);
-  assert(FCB_block_size >= size);
+  printf("FCB_block_size = %d, size = %d\n",FCB_block_size, size);
+  assert(FCB_block_size*fs->FCB_SIZE >= size);
   /* Read from storage */
   if(size == 0) return;
   u32 FCB_Start = FCB_read_start(fs, FCB_address);
@@ -372,13 +375,16 @@ __device__ u32 fs_write(FileSystem *fs, uchar* input, u32 size, u32 fp)
   u32 FCB_address = fp & 0x7fffffff;
   u32 op = (fp & 0x80000000) >> 31;
   assert(op == 1);
-  u32 storage_address = VCB_Query(fs, size / fs->FCB_SIZE + 1);
+  int storage_address = VCB_Query(fs, size / fs->FCB_SIZE + 1);
+  printf("storage_address = %d\n",storage_address);
   assert(storage_address > -2);   // Assert there are enough space in total.
   if(storage_address == -1){
     storage_address = memory_compaction(fs);
   }
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_SIZE + storage_address * fs->FCB_SIZE];
   memcpy(target, input, size);
+  FCB_set_start(fs, FCB_address, storage_address);
+  FCB_set_size(fs, FCB_address, size / fs->FCB_SIZE + 1);
   return 0;
 }
 
@@ -408,6 +414,28 @@ __device__ void fs_gsys(FileSystem *fs, int op, char *s)
 {
 	/* Implement rm operation here */
   assert(op == 2);
+  uchar file_name[20];
+  bool found = false;
+  int FCB_address;
+  for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
+    FCB_read_filename(fs, FCB_address, file_name);
+    if(memcmp(file_name,(uchar*)s,20) == 0){
+      if(FCB_read_validbit(fs, FCB_address)){
+        printf("Found name \n");
+        found = true;
+        break;
+      }
+    }
+  }
+  if(found){
+    FCB_set_validbit(fs, FCB_address, 0);
+    u32 start = FCB_read_start(fs, FCB_address);
+    u32 size = FCB_read_size(fs, FCB_address);
+    VCB_modification(fs, start, size, 0);
+  }
+  else{
+    printf("Error! The file '%s' does not exists.\n",s);
+  }
 }
 
 // Later to be continued: Time ranking compress
