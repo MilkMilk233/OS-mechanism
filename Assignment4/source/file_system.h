@@ -43,9 +43,9 @@ __device__ u32 fs_write(FileSystem *fs, uchar* input, u32 size, u32 fp);
 __device__ void fs_gsys(FileSystem *fs, int op);
 __device__ void fs_gsys(FileSystem *fs, int op, char *s);
 __device__ u32 FCB_read_permission(FileSystem *fs, u32 FCB_address);
-__device__ u32 FCB_set_permission(FileSystem *fs, u32 FCB_address, u32 option, u32 value);
+__device__ void FCB_set_permission(FileSystem *fs, u32 FCB_address, u32 option, u32 value);
 __device__ u32 FCB_read_validbit(FileSystem *fs, u32 FCB_address);
-__device__ u32 FCB_set_validbit(FileSystem *fs, u32 FCB_address, u32 value);
+__device__ void FCB_set_validbit(FileSystem *fs, u32 FCB_address, u32 value);
 __device__ void FCB_read_filename(FileSystem *fs, u32 FCB_address, uchar *output);
 __device__ void FCB_set_filename(FileSystem *fs, u32 FCB_address, uchar *input);
 __device__ u32 FCB_read_start(FileSystem *fs, u32 FCB_address);
@@ -58,5 +58,8 @@ __device__ u32 FCB_read_ctime(FileSystem *fs, u32 FCB_address);
 __device__ void FCB_set_ctime(FileSystem *fs, u32 FCB_address, u32 value);
 __device__ void memcpy(uchar *target, uchar *source, int size);
 __device__ u32 memcmp(uchar *target, uchar *source, int size);
+__device__ void cover(FileSystem *fs, u32 layer, u32 start, u32 end);
+__device__ int VCB_modification(FileSystem *fs, u32 start, u32 size, u32 value);
+__device__ int VCB_Query(FileSystem *fs, u32 n);
 
 #endif

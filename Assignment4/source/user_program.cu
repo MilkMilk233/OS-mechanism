@@ -6,6 +6,7 @@ __device__ void user_program(FileSystem *fs, uchar *input, uchar *output) {
 	
 	/////////////// Test Case 0  ///////////////
 	u32 fp = fs_open(fs, "t.txt\0", G_WRITE);
+	fp = fs_open(fs, "t.txt\0", G_WRITE);
 
 	/*
 	/////////////// Test Case 1  ///////////////

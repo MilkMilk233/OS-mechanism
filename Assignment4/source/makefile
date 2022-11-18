@@ -3,4 +3,4 @@ test:
 code:
 	g++ ./test.cpp -o code -O2 -std=c++11
 clean:
-	rm test
+	rm test code
