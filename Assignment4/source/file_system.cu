@@ -3,6 +3,7 @@
 #include <cuda_runtime.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 __device__ __managed__ u32 gtime = 0;
 
@@ -26,54 +27,153 @@ __device__ void fs_init(FileSystem *fs, uchar *volume, int SUPERBLOCK_SIZE,
   fs->MAX_FILE_SIZE = MAX_FILE_SIZE;    // 1048576
   fs->FILE_BASE_ADDRESS = FILE_BASE_ADDRESS;    // 36864
 
+  // Extra intermediate variable space (8 bytes)
+  fs->MODIFY_TIME = 0;
+  fs->CREATE_TIME = 0;
+
+}
+
+__device__ void memcpy(uchar *target, uchar *source, int size){
+  for(int i = 0; i < size; i++){
+    target[i] = source[i];
+  }
+}
+
+__device__ u32 memcmp(uchar *target, uchar *source, int size){
+  for(int i = 0; i < size; i++){
+    if(target[i] != source[i]) return 1;
+  }
+  return 0;
 }
 
 
-// To get the [start, start+size] bits in source.
-__device__ u32 bit_read(u32 *source, u32 start, u32 size){
-  return ((*source >> start) && (1 << size));
+// Read the FCB permission bit.
+__device__ u32 FCB_read_permission(FileSystem *fs, u32 FCB_address){
+  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 24];
+  return (*target >> 6) & 0b00000011;
 }
 
-// To write the source to the [start, start+size] bits in target.
-__device__ void bit_write(u32 *target, u32 start, u32 size, u32 source){
-  *target = (*target && ~((1 << start + size) - (1 << start))) + ((1 << size) && source); 
+// Set the permission bit, 
+__device__ u32 FCB_set_permission(FileSystem *fs, u32 FCB_address, u32 option, u32 value){
+  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 24];
+  if(option) *target = *target & 0b01111111 + (value << 7); // Option = 1,  set read permission
+  else *target = *target & 0b10111111 + (value << 6); // option = 0,  set write permission
+}
+
+// Read the FCB valid bit. Valid = 1, Invalid = 0.
+__device__ u32 FCB_read_validbit(FileSystem *fs, u32 FCB_address){
+  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 24];
+  return (*target >> 5) & 0b00000001;
+}
+
+// Set the FCB permission bit. Valid = 1, Invalid = 0.
+__device__ u32 FCB_set_validbit(FileSystem *fs, u32 FCB_address, u32 value){
+  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 24];
+  *target = *target & 0b11011111 + (value << 5);
+}
+
+// Read the FCB filename
+__device__ void FCB_read_filename(FileSystem *fs, u32 FCB_address, uchar *output){
+  uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE];
+  memcpy(output, source, 20);
+}
+
+// Set the FCB filename
+__device__ void FCB_set_filename(FileSystem *fs, u32 FCB_address, uchar *input){
+  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE];
+  memcpy(target, input, 20);
+}
+
+// Read the FCB starting point address (Unit: block)
+__device__ u32 FCB_read_start(FileSystem *fs, u32 FCB_address){
+  uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+20];
+  u32 result;
+  memcpy((uchar*)&result, source, 2);
+  return result;
+}
+
+// Set the FCB starting point address (Unit: block)
+__device__ void FCB_set_start(FileSystem *fs, u32 FCB_address, u32 value){
+  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+20];
+  memcpy(target, (uchar*)&value, 2);
+}
+
+// Read the FCB starting point address (Unit: block)
+__device__ u32 FCB_read_size(FileSystem *fs, u32 FCB_address){
+  uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+22];
+  u32 result;
+  memcpy((uchar*)&result, source, 2);
+  return result;
+}
+
+// Set the FCB starting point address (Unit: block)
+__device__ void FCB_set_size(FileSystem *fs, u32 FCB_address, u32 value){
+  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+22];
+  memcpy(target, (uchar*)&value, 2);
+}
+
+// Read the FCB Last modified time
+__device__ u32 FCB_read_ltime(FileSystem *fs, u32 FCB_address){
+  uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+26];
+  u32 result;
+  memcpy((uchar*)&result, source, 3);
+  return result;
+}
+
+// Set the FCB Last modified time
+__device__ void FCB_set_ltime(FileSystem *fs, u32 FCB_address, u32 value){
+  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+26];
+  memcpy(target, (uchar*)&value, 3);
+}
+
+// Read the FCB Last modified time
+__device__ u32 FCB_read_ctime(FileSystem *fs, u32 FCB_address){
+  uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+29];
+  u32 result;
+  memcpy((uchar*)&result, source, 3);
+  return result;
+}
+
+// Set the FCB Last modified time
+__device__ void FCB_set_ctime(FileSystem *fs, u32 FCB_address, u32 value){
+  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+29];
+  memcpy(target, (uchar*)&value, 3);
 }
 
 __device__ u32 fs_open(FileSystem *fs, char *s, int op)
 {
   // Search the FCB, see if there are 
-  char file_name[20];
+  uchar file_name[20];
   int FCB_SIZE = fs->FCB_SIZE;
   bool found = false;
-  u32 *carrier;
-  int secondary_address, pcb_address;
-  for(pcb_address = 0; pcb_address < fs->FCB_ENTRIES; pcb_address++){
-    carrier = &fs->volume[SUPERBLOCK_SIZE + pcb_address*FCB_SIZE];
-    memcpy(file_name, carrier, FCB_SIZE);
-    if(memcmp(file_name,s) == 0){
-      // Found
-      if(bit_read(carrier, 0, 1) == 1){
+  int secondary_address, FCB_address;
+  for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
+    FCB_read_filename(fs, FCB_address, file_name);
+    if(memcmp(file_name,(uchar*)s,20) == 0){
+      if(FCB_read_validbit(fs, FCB_address)){
         found = true;
         break;
       }
     }
   }
-  if(found){
-    // Fetch and Return the Starting point
-  }
-  else{
+  if(!found){
     // Initiate a new FCB block with size = 0
-    // Set permission
-    // Set Create time
-    // Set Update time
-    // Set Starting point
-    // Set Size
-    // Set Name
-
-    // Fetch and Return the secondary_address
-
+    for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
+      if(FCB_read_validbit(fs, FCB_address) == 0){
+        found = true;
+        break;
+      }
+    }
+    FCB_set_filename(fs, FCB_address, (uchar*)s);
+    FCB_set_permission(fs, FCB_address, 0, 1);
+    FCB_set_permission(fs, FCB_address, 1, 1);
+    FCB_set_validbit(fs, FCB_address, 1);
+    FCB_set_start(fs, FCB_address, 0);
+    FCB_set_size(fs, FCB_address, 0);
+    FCB_set_ctime(fs, FCB_address, 0);
+    FCB_set_ctime(fs, FCB_address, 0);
   }
-  return secondary_address;
+  return (FCB_address + (op << 31));
 }
 
 

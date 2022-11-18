@@ -7,7 +7,8 @@
 
 typedef unsigned char uchar;
 typedef uint32_t u32;
-typedef uint16_t u16;   
+typedef uint16_t u16;  
+typedef uint8_t u8;  
 
 #define G_WRITE 1
 #define G_READ 0
@@ -26,6 +27,8 @@ struct FileSystem {
 	int MAX_FILE_NUM;
 	int MAX_FILE_SIZE;
 	int FILE_BASE_ADDRESS;
+	int MODIFY_TIME;
+	int CREATE_TIME;
 };
 
 
@@ -39,6 +42,21 @@ __device__ void fs_read(FileSystem *fs, uchar *output, u32 size, u32 fp);
 __device__ u32 fs_write(FileSystem *fs, uchar* input, u32 size, u32 fp);
 __device__ void fs_gsys(FileSystem *fs, int op);
 __device__ void fs_gsys(FileSystem *fs, int op, char *s);
-
+__device__ u32 FCB_read_permission(FileSystem *fs, u32 FCB_address);
+__device__ u32 FCB_set_permission(FileSystem *fs, u32 FCB_address, u32 option, u32 value);
+__device__ u32 FCB_read_validbit(FileSystem *fs, u32 FCB_address);
+__device__ u32 FCB_set_validbit(FileSystem *fs, u32 FCB_address, u32 value);
+__device__ void FCB_read_filename(FileSystem *fs, u32 FCB_address, uchar *output);
+__device__ void FCB_set_filename(FileSystem *fs, u32 FCB_address, uchar *input);
+__device__ u32 FCB_read_start(FileSystem *fs, u32 FCB_address);
+__device__ void FCB_set_start(FileSystem *fs, u32 FCB_address, u32 value);
+__device__ u32 FCB_read_size(FileSystem *fs, u32 FCB_address);
+__device__ void FCB_set_size(FileSystem *fs, u32 FCB_address, u32 value);
+__device__ u32 FCB_read_ltime(FileSystem *fs, u32 FCB_address);
+__device__ void FCB_set_ltime(FileSystem *fs, u32 FCB_address, u32 value);
+__device__ u32 FCB_read_ctime(FileSystem *fs, u32 FCB_address);
+__device__ void FCB_set_ctime(FileSystem *fs, u32 FCB_address, u32 value);
+__device__ void memcpy(uchar *target, uchar *source, int size);
+__device__ u32 memcmp(uchar *target, uchar *source, int size);
 
 #endif
