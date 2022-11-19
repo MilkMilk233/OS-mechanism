@@ -1,6 +1,7 @@
 ﻿#include "file_system.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <stdio.h>
 
 __device__ void user_program(FileSystem *fs, uchar *input, uchar *output) {
 	
@@ -11,6 +12,7 @@ __device__ void user_program(FileSystem *fs, uchar *input, uchar *output) {
 	*/
 	
 	/////////////// Test Case 1  ///////////////
+	// printf("Output = %s\n",output);
 	u32 fp = fs_open(fs, "t.txt\0", G_WRITE);
 
 	fs_write(fs, input, 64, fp);
@@ -25,11 +27,12 @@ __device__ void user_program(FileSystem *fs, uchar *input, uchar *output) {
 	// fs_gsys(fs, LS_S);
 	fp = fs_open(fs, "b.txt\0", G_WRITE);
 	fs_write(fs, input + 64, 12, fp);
+	// printf("Output = %s\n",output);
 	
-	// fs_gsys(fs, LS_S);
-	// fs_gsys(fs, LS_D);
-	// fs_gsys(fs, RM, "t.txt\0");
-	// fs_gsys(fs, LS_S);
+	fs_gsys(fs, LS_S);
+	fs_gsys(fs, LS_D);
+	fs_gsys(fs, RM, "t.txt\0");
+	fs_gsys(fs, LS_S);
 	
 
 

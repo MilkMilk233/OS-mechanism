@@ -4,6 +4,9 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <inttypes.h>
+#include <stdlib.h>
+#include <vector>
+#include <algorithm> 
 
 typedef unsigned char uchar;
 typedef uint32_t u32;
@@ -29,6 +32,7 @@ struct FileSystem {
 	int FILE_BASE_ADDRESS;
 	int MODIFY_TIME;
 	int CREATE_TIME;
+	int VALID_BLOCK;
 };
 
 
@@ -61,5 +65,6 @@ __device__ u32 memcmp(uchar *target, uchar *source, int size);
 __device__ void cover(FileSystem *fs, u32 layer, u32 start, u32 end);
 __device__ void VCB_modification(FileSystem *fs, u32 start, u32 size, u32 value);
 __device__ int VCB_Query(FileSystem *fs, u32 n);
+__device__ void memory_compaction(FileSystem *fs);
 
 #endif
