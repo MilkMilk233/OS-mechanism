@@ -402,6 +402,8 @@ __device__ u32 fs_write(FileSystem *fs, uchar* input, u32 size, u32 fp)
   u32 op = (fp & 0x80000000) >> 31;
   assert(op == 1);
   int storage_address = VCB_Query(fs, size / fs->FCB_SIZE + 1);
+  // printf("storage_address = %d\n",storage_address);
+  if(storage_address <= -2) printf("Error! storage_address = %d\n",storage_address);
   assert(storage_address > -2);   // Assert there are enough space in total.
   if(storage_address == -1){
     memory_compaction(fs);
@@ -411,6 +413,7 @@ __device__ u32 fs_write(FileSystem *fs, uchar* input, u32 size, u32 fp)
   memcpy(target, input, size);
   FCB_set_start(fs, FCB_address, storage_address);
   FCB_set_size(fs, FCB_address, size);
+  FCB_set_ltime(fs, FCB_address);
   return 0;
 }
 
@@ -428,6 +431,12 @@ __device__ void fs_gsys(FileSystem *fs, int op)
   u32 last_max_size = fs->MAX_FILE_SIZE + 1;
   u32 current_max_size = 0;
   uchar name[20];
+
+  u32 ctime, current_min_address;
+  u32 last_min_ctime = 0;
+  u32 current_min_ctime = pow(2,24);
+
+  bool found_inner;
   // printf("Tag 1\n");
 
   assert(op == LS_D || op == LS_S);
@@ -438,15 +447,17 @@ __device__ void fs_gsys(FileSystem *fs, int op)
       for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
         if(!FCB_read_validbit(fs,FCB_address)) continue;
         ltime = FCB_read_ltime(fs, FCB_address);
-        // printf("ltime = %d, last_max_ltime = %d, current_max_ltime = %d\n",ltime,last_max_ltime,current_max_ltime);
+        // FCB_read_filename(fs,FCB_address, name);
+        // printf("ltime = %d, last_max_ltime = %d, current_max_ltime = %d, current_max_address = %d, current_name = %s\n",ltime,last_max_ltime,current_max_ltime,current_max_address,name);
         if(ltime < last_max_ltime && ltime >= current_max_ltime){
           current_max_ltime = ltime;
           current_max_address = FCB_address;
         }
       }
+      // printf("ltime = %d, last_max_ltime = %d, current_max_ltime = %d, current_max_address = %d\n",ltime,last_max_ltime,current_max_ltime,current_max_address);
       FCB_read_filename(fs, current_max_address, name);
       current_max_size = FCB_read_size(fs, current_max_address);
-      printf("%s %d\n",name, current_max_size);
+      printf("%s\n",name);
       last_max_ltime = current_max_ltime;
     }
   }
@@ -455,24 +466,52 @@ __device__ void fs_gsys(FileSystem *fs, int op)
     // printf("Tag 2, fs->VALID_BLOCK = %d\n",fs->VALID_BLOCK);
     for(int i = 0; i < fs->VALID_BLOCK; i++){
       // printf("Tag 3, i = %d\n",i);
-      current_max_size = current_max_ltime = 0;
+      current_max_size = 0;
+      current_min_ctime = pow(2,24);
+      found_inner = false;
       for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
         
         if(!FCB_read_validbit(fs,FCB_address)) continue;
         size = FCB_read_size(fs, FCB_address);
-        ltime = FCB_read_ltime(fs, FCB_address);
-        // printf("ltime = %d, size = %d\n",ltime, size);
+        ctime = FCB_read_ctime(fs, FCB_address);
+        // FCB_read_filename(fs,FCB_address, name);
+        // printf("ltime = %d, size = %d, name = %s, last_max_size = %d, current_max_size = %d\n",ltime, size, name, last_max_size,current_max_size);
         if(size < last_max_size && size > current_max_size){
+          FCB_read_filename(fs,FCB_address, name);
+          // printf("NORMAL: size = %d, name = %s, current_max_size = %d, last_max_size = %d, ctime = %d\n",size, name,current_max_size,last_max_size,ctime);
           current_max_size = size;
           current_max_address = FCB_address;
-          current_max_ltime = ltime;
+          current_min_ctime = ctime;
         }
-        else if(size < last_max_size && size == current_max_size){
+        else if(size == last_max_size){
           // printf("Bingo!!!!!!!\n");
-          if(ltime < last_max_ltime && ltime >= current_max_ltime){
+          // FCB_read_filename(fs,FCB_address, name);
+          // printf("CASE1: ctime = %d, size = %d, name = %s, current_max_size = %d, last_max_size = %d\n",ctime, size, name,current_max_size,last_max_size);
+          // printf("CASE1 cont'd: last_min_ctime = %d, current_min_ctime = %d\n",last_min_ctime,current_min_ctime);
+          // if(current_max_ltime > last_max_ltime) current_max_ltime = 0;
+          if(ctime > last_min_ctime){
+            if(found_inner == false){
+              current_min_ctime = pow(2,24);
+              found_inner = true;
+            } 
+            if(ctime <= current_min_ctime){
+              // printf("Change Success: ltime = %d, size = %d, name = %s\n",ltime, size, name);
+              current_max_size = size;
+              current_max_address = FCB_address;
+              current_min_ctime = ctime;
+            }
+          }
+        }
+        else if(size == current_max_size){
+          // printf("Bingo!!!!!!!\n");
+          // FCB_read_filename(fs,FCB_address, name);
+          // printf("CASE2: ctime = %d, size = %d, name = %s, current_max_size = %d, last_max_size = %d\n",ctime, size, name,current_max_size,last_max_size);
+          // printf("CASE2 cont'd: last_min_ctime = %d, current_min_ctime = %d\n",last_min_ctime,current_min_ctime);
+          if(ctime < current_min_ctime){
+            // printf("Change Success: ltime = %d, size = %d, name = %s\n",ltime, size, name);
             current_max_size = size;
             current_max_address = FCB_address;
-            current_max_ltime = ltime;
+            current_min_ctime = ctime;
           }
         }
       }
@@ -480,7 +519,7 @@ __device__ void fs_gsys(FileSystem *fs, int op)
       FCB_read_filename(fs, current_max_address, name);
       // printf("Tag 5\n");
       printf("%s %d\n",name, current_max_size);
-      last_max_ltime = current_max_ltime;
+      last_min_ctime = current_min_ctime;
       last_max_size = current_max_size;
     }
   }

@@ -7,32 +7,42 @@ __device__ void user_program(FileSystem *fs, uchar *input, uchar *output) {
 	
 	/*
 	/////////////// Test Case 0  ///////////////
-	u32 fp = fs_open(fs, "t.txt\0", G_WRITE);
-	fp = fs_open(fs, "t.txt\0", G_WRITE);
+	u32 fp;
+	fp = fs_open(fs, "f.txt\0", G_WRITE);
+	fs_write(fs, input, 16, fp);
+	fp = fs_open(fs, "c.txt\0", G_WRITE);
+	fs_write(fs, input, 32, fp);
+	fp = fs_open(fs, "a.txt\0", G_WRITE);
+	fs_write(fs, input, 64, fp);
+	fp = fs_open(fs, "e.txt\0", G_WRITE);
+	fs_write(fs, input, 16, fp);
+	fp = fs_open(fs, "d.txt\0", G_WRITE);
+	fs_write(fs, input, 32, fp);
+	fp = fs_open(fs, "b.txt\0", G_WRITE);
+	fs_write(fs, input, 64, fp);
+	fs_gsys(fs, LS_S);
+	fs_gsys(fs, LS_D);
 	*/
 	
+	/*
 	/////////////// Test Case 1  ///////////////
-	// printf("Output = %s\n",output);
 	u32 fp = fs_open(fs, "t.txt\0", G_WRITE);
-
 	fs_write(fs, input, 64, fp);
-	
 	fp = fs_open(fs, "b.txt\0", G_WRITE);
 	fs_write(fs, input + 32, 32, fp);
 	fp = fs_open(fs, "t.txt\0", G_WRITE);
 	fs_write(fs, input + 32, 32, fp);
 	fp = fs_open(fs, "t.txt\0", G_READ);
 	fs_read(fs, output, 32, fp);
-	// fs_gsys(fs,LS_D);
-	// fs_gsys(fs, LS_S);
+	fs_gsys(fs,LS_D);
+	fs_gsys(fs, LS_S);
 	fp = fs_open(fs, "b.txt\0", G_WRITE);
 	fs_write(fs, input + 64, 12, fp);
-	// printf("Output = %s\n",output);
-	
 	fs_gsys(fs, LS_S);
 	fs_gsys(fs, LS_D);
 	fs_gsys(fs, RM, "t.txt\0");
 	fs_gsys(fs, LS_S);
+	// */
 	
 
 
@@ -75,7 +85,10 @@ __device__ void user_program(FileSystem *fs, uchar *input, uchar *output) {
 		fs_gsys(fs,RM, fname[i]);
 
 	fs_gsys(fs,LS_D);
+
+	// */
 	
+	// /*
 
 	/////////////// Test Case 3  ///////////////
 	u32 fp = fs_open(fs, "t.txt\0", G_WRITE);
@@ -152,7 +165,7 @@ __device__ void user_program(FileSystem *fs, uchar *input, uchar *output) {
 	fp = fs_open(fs, "EA\0", G_WRITE);
 	fs_write(fs, input + 1024 * 100, 1024, fp);
 	fs_gsys(fs, LS_S);
-	*/
+	// */
 
 	/////////////// Test Case 4  ///////////////
 	/*

@@ -17,5 +17,5 @@ make clean
 nvcc --relocatable-device-code=true main.cu user_program.cu file_system.cu -o test
 
 ## Run the executable file
-srun ./test
+srun ./test > testcase3.txt
 
