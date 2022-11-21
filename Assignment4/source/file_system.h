@@ -67,5 +67,6 @@ __device__ void VCB_modification(FileSystem *fs, u32 start, u32 size, u32 value)
 __device__ int VCB_Query(FileSystem *fs, u32 n);
 __device__ void memory_compaction(FileSystem *fs);
 __device__ void print_FCB(FileSystem *fs);
+__device__ void print_VCB(FileSystem *fs);
 
 #endif

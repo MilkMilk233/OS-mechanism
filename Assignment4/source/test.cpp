@@ -27,14 +27,14 @@ int main() {
     uchar test[1];
     test[0] = 0x4f;
     uchar *target = &test[0];
-    printf("bit_read(target, 0, 1) = %x\n",bit_read(target, 0, 1));
-    printf("bit_read(target, 1, 1) = %x\n",bit_read(target, 1, 1));
-    printf("bit_read(target, 2, 1) = %x\n",bit_read(target, 2, 1));
-    printf("bit_read(target, 3, 1) = %x\n",bit_read(target, 3, 1));
-    printf("bit_read(target, 4, 1) = %x\n",bit_read(target, 4, 1));
-    printf("bit_read(target, 5, 1) = %x\n",bit_read(target, 5, 1));
-    printf("bit_read(target, 6, 1) = %x\n",bit_read(target, 6, 1));
-    printf("bit_read(target, 7, 1) = %x\n",bit_read(target, 7, 1));
-    printf("bit_read(target, 0, 8) = %x\n",bit_read(target, 0, 8));
+    int aaa = 32;
+    int bbb = -1;
+    printf("aaa = %d, bbb = %d\n",aaa,(u32)bbb);
+    if(aaa < bbb){
+      printf("aaa < bbb\n");
+    }
+    else{
+      printf("aaa > bbb\n");
+    }
     return 0;
 }
