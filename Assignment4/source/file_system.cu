@@ -135,8 +135,8 @@ __device__ u32 FCB_read_start(FileSystem *fs, u32 FCB_address){
 
 /*
   Description:   Set the FCB starting point address (Unit: block)
-  Input:
-  Output: 
+  Input:  block
+  Output:   N/A
 */
 __device__ void FCB_set_start(FileSystem *fs, u32 FCB_address, u32 value){
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+20];
@@ -211,36 +211,64 @@ __device__ void FCB_set_ctime(FileSystem *fs, u32 FCB_address){
   fs->CREATE_TIME++;
 }
 
+/*
+  Description:   For testing only, printing out all FCB info.
+  Input: 
+  Output: 
+*/
+
+__device__ void print_FCB(FileSystem *fs){
+  u32 FCB_address;
+  uchar file_name[20];
+  printf("===============PRINTING_FCB_BLOCK_INFO=====================\n");
+  printf("Valid blocks = %d\n",fs->VALID_BLOCK);
+  printf("fs->volume[0] = %d, fs->volume[1] = %d, fs->volume[2] = %d\n",fs->volume[0],fs->volume[1],fs->volume[2]);
+  for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
+    if(!FCB_read_validbit(fs,FCB_address)) continue;
+    FCB_read_filename(fs, FCB_address, file_name);
+    printf("Block %5d, name = %20s,start = %10d, size = %10d, ctime = %10d, ltime = %10d\n",FCB_address,file_name,FCB_read_start(fs,FCB_address), FCB_read_size(fs,FCB_address), FCB_read_ctime(fs, FCB_address), FCB_read_ltime(fs, FCB_address));
+  }
+  printf("===============PRINTING_FCB_BLOCK_INFO_END=================\n");
+}
+
 
 /*
   Description:   Check if there is continuous n free blocks. (unit: 32-bytes-large block)
-  Input:  n -> requested # of continuous free blocks 
-  Output: Positive # -> valid block adddress, -1 -> Need memory compaction, -2 -> Lack of space
+  Input:  blocks
+  Output: blocks
 */
 __device__ int VCB_Query(FileSystem *fs, u32 n){
   bool found = false;
-  int current_cfree_block;
-  int total_free_block;
+  int current_cfree_block = 0;
+  int total_free_block = 0;
   int result;
+  // printf("VCB_Query: fs->volume[0] = %d, fs->volume[1] = %d, fs->volume[2] = %d\n",fs->volume[0],fs->volume[1],fs->volume[2]);
   for(int i = 0; i < fs->SUPERBLOCK_SIZE; i++){
-    uchar *unit = &fs->volume[i];
+    uchar unit = fs->volume[i];
+    // printf("Unit = %d, (unit >> (8)) = %d\n",unit,(unit >> (7)));
     for(u32 j = 0; j < 8; j++){
-      uchar bit = (*unit >> (8-i)) & 0b00000001;
+      uchar bit = (unit >> (7-j)) & 0b00000001;
       if(bit == 0){
         current_cfree_block++;
         total_free_block++;
         if(current_cfree_block >= n){
           found = true;
-          result = i*8 + j - current_cfree_block;
+          result = i*8 + j + 1 - current_cfree_block;
+          // printf("result = %d, i = %d, j = %d, current_cfree_block = %d\n",result,i,j,current_cfree_block);
           break;
         }
       }
       else{
+        // printf("bit = %d\n",bit);
         current_cfree_block = 0;
       }
     }
+    if(found) break;
+    // printf("Loop %d, total_free_block = %d\n",i,total_free_block);
   }
+  // printf("VCB Query: request for %d blocks size, free blocks remaining: %d\n",n,total_free_block);
   if(!found){
+    printf("NOT found\n");
     if(total_free_block < n) return -2;
     else return -1;
   }
@@ -253,35 +281,40 @@ __device__ int VCB_Query(FileSystem *fs, u32 n){
   Output: 
 */
 __device__ void cover(FileSystem *fs, u32 layer, u32 start, u32 end, u32 value){
-  u32 mask;
+  uchar mask = 0;
   for(u32 j = start; j < end; j++){
-    mask += (1 << (31 - j));
+    mask += (1 << (7 - j));
   }
+  // printf("layer = %d, start = %d, end = %d, value = %d, MASK: %d\n",layer,start, end, value, mask);
   if(value) fs->volume[layer] |= mask; 
   else fs->volume[layer] &= ~mask; 
 }
 
 /*
   Description:   Set the [start, start+size] in VCB to be 0/1. 
-  Input:  start (Unit:blocks), size (Unit: blocks)
+  Input:  start (Unit:block), size (Unit: block)
   Output: N/A
 */
 __device__ void VCB_modification(FileSystem *fs, u32 start, u32 size, u32 value){
-  u32 start_i = start / 32;
-  u32 start_j = start % 32;
-  u32 end_i = (start + size) / 32;
-  u32 end_j = (start + size) % 32;
+  // printf("VCB_modification HERE\n");
+  u32 start_i = start / 8;
+  u32 start_j = start % 8;
+  u32 end_i = (start + size) / 8;
+  u32 end_j = (start + size) % 8;
+  // printf("start_i = %d, start_j = %d, end_i = %d, end_j = %d\n",start_i,start_j, end_i, end_j);
+  // printf("BEFORE: fs->volume[0] = %d, fs->volume[1] = %d, fs->volume[2] = %d\n",fs->volume[0],fs->volume[1],fs->volume[2]);
 
   if(start_i == end_i){
     cover(fs, start_i, start_j, end_j, value);
   }
   else{
-    cover(fs, start_i, start_j, 32, value);
+    cover(fs, start_i, start_j, 8, value);
     cover(fs, end_i, 0, end_j, value);
     for(u32 i = start_i+1; i < end_i; i++){
       fs->volume[i] = (value) ? 0xffffffff : 0x00000000;
     }
   }
+  // printf("AFTER: fs->volume[0] = %d, fs->volume[1] = %d, fs->volume[2] = %d\n",fs->volume[0],fs->volume[1],fs->volume[2]);
 }
 
 /*
@@ -291,6 +324,7 @@ __device__ void VCB_modification(FileSystem *fs, u32 start, u32 size, u32 value)
 */
 __device__ void memory_compaction(FileSystem *fs){
   // TODO
+  printf("HERE IN memory_compaction \n");
   u32 FCB_address, total_size;
   int last_endpoint = -1;
   int block_size;
@@ -305,17 +339,17 @@ __device__ void memory_compaction(FileSystem *fs){
         min_address = FCB_address;
       }
     }
-    block_size = (FCB_read_size(fs, min_address) -1) / 8 + 1;
+    block_size = (FCB_read_size(fs, min_address) -1) / fs->FCB_SIZE + 1;
     if(!block_size) continue;
-    uchar *dest = &fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_SIZE + (last_endpoint+1) * fs->FCB_SIZE];
-    uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_SIZE + min_start * fs->FCB_SIZE];
+    uchar *dest = &fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_ENTRIES * fs->FCB_SIZE + (last_endpoint+1) * fs->FCB_SIZE];
+    uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_ENTRIES * fs->FCB_SIZE + min_start * fs->FCB_SIZE];
     memcpy(dest, source, block_size*fs->FCB_SIZE);
     FCB_set_start(fs, min_address, last_endpoint+1);
     total_size += block_size;
     last_endpoint += block_size;
   }
   VCB_modification(fs, 0, total_size, 1);
-  VCB_modification(fs, total_size, fs->SUPERBLOCK_SIZE*8 - total_size, 0);
+  VCB_modification(fs, total_size, (fs->SUPERBLOCK_SIZE * 8 - total_size), 0);
 }
 
 /*
@@ -362,8 +396,9 @@ __device__ u32 fs_open(FileSystem *fs, char *s, int op)
     // Clean up the area.
     if(op == G_WRITE){
       u32 start = FCB_read_start(fs, FCB_address);
-      int block_size = (FCB_read_size(fs, FCB_address) - 1) / 8 + 1;
-      VCB_modification(fs, start, block_size, 0);
+      u32 size = FCB_read_size(fs, FCB_address);
+      VCB_modification(fs, start, (size - 1) / fs->FCB_SIZE + 1, 0);
+      // FCB_set_size(fs, FCB_address, 0); 
     }
   }
   return (FCB_address + (op << 31));
@@ -381,12 +416,14 @@ __device__ void fs_read(FileSystem *fs, uchar *output, u32 size, u32 fp)
   u32 op = (fp & 0x80000000) >> 31;
   assert(op == 0);
   u32 FCB_block_size = FCB_read_size(fs, FCB_address);
+  // printf("Block address = %d, size = %d\n",FCB_address,FCB_block_size);
   // printf("size = %d, FCB_block_size = %d\n",size, FCB_block_size);
-  assert(FCB_block_size >= size);
+  if(FCB_block_size < size) printf("ERROR: FCB_block_size < size, FCB_block_size = %d, size = %d\n",FCB_block_size,size);
+  // printf("size = %d, FCB_block_size = %d\n",size, FCB_block_size);
   /* Read from storage */
   if(size == 0) return;
   u32 FCB_Start = FCB_read_start(fs, FCB_address);
-  uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_SIZE + FCB_Start * fs->FCB_SIZE];
+  uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_ENTRIES * fs->FCB_SIZE + FCB_Start * fs->FCB_SIZE];
   memcpy(output, source, size);
 }
 
@@ -401,19 +438,28 @@ __device__ u32 fs_write(FileSystem *fs, uchar* input, u32 size, u32 fp)
   u32 FCB_address = fp & 0x7fffffff;
   u32 op = (fp & 0x80000000) >> 31;
   assert(op == 1);
-  int storage_address = VCB_Query(fs, size / fs->FCB_SIZE + 1);
-  // printf("storage_address = %d\n",storage_address);
-  if(storage_address <= -2) printf("Error! storage_address = %d\n",storage_address);
-  assert(storage_address > -2);   // Assert there are enough space in total.
-  if(storage_address == -1){
-    memory_compaction(fs);
-    storage_address = FCB_read_start(fs, FCB_address);
+  u32 original_size = FCB_read_size(fs, FCB_address);
+  int storage_address = FCB_read_start(fs, FCB_address);
+  if(original_size < size){
+    storage_address = VCB_Query(fs, (size - 1 ) / fs->FCB_SIZE + 1);
+    // printf("storage_address = %d, size = %d\n",storage_address,size);
+    // printf("storage_address = %d\n",storage_address);
+    if(storage_address <= -2) printf("Error! storage_address = %d\n",storage_address);
+    // assert(storage_address > -2);   // Assert there are enough space in total.
+    if(storage_address == -1){
+      // printf("Doing modifications\n");
+      memory_compaction(fs);
+      storage_address = FCB_read_start(fs, FCB_address);
+    }
   }
-  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_SIZE + storage_address * fs->FCB_SIZE];
+  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_ENTRIES * fs->FCB_SIZE + storage_address * fs->FCB_SIZE];
+  // printf("input[0] = %d, input[1] = %d\n",input[0],input[1]);
   memcpy(target, input, size);
+  // printf("target[0] = %d, target[1] = %d\n",target[0],target[1]);
   FCB_set_start(fs, FCB_address, storage_address);
   FCB_set_size(fs, FCB_address, size);
   FCB_set_ltime(fs, FCB_address);
+  VCB_modification(fs, storage_address, (size - 1) / fs->FCB_SIZE + 1, 1);
   return 0;
 }
 
@@ -548,7 +594,7 @@ __device__ void fs_gsys(FileSystem *fs, int op, char *s)
   if(found){
     FCB_set_validbit(fs, FCB_address, 0);
     u32 start = FCB_read_start(fs, FCB_address);
-    int block_size = (FCB_read_size(fs, FCB_address) - 1) / 8 + 1;
+    int block_size = (FCB_read_size(fs, FCB_address) - 1) / fs->FCB_SIZE + 1;
     VCB_modification(fs, start, block_size, 0);
     fs->VALID_BLOCK--;
   }
