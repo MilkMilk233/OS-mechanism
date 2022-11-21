@@ -1,0 +1,14 @@
+===sort by modified time===
+t.txt
+b.txt
+===sort by file size===
+t.txt 32
+b.txt 32
+===sort by file size===
+t.txt 32
+b.txt 12
+===sort by modified time===
+b.txt
+t.txt
+===sort by file size===
+b.txt 12
