@@ -367,7 +367,7 @@ __device__ void memory_compaction(FileSystem *fs){
     block_size = (FCB_read_size(fs, min_address) -1) / fs->FCB_SIZE + 1;
     // printf("AFTER: min_address = %d, min_start = %d, block_size = %d\n",min_address,min_start,block_size);
     if(!block_size) continue;
-    uchar *dest = &fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_ENTRIES * fs->FCB_SIZE + (last_endpoint+1) * fs->FCB_SIZE];
+    uchar *dest = &fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_ENTRIES * fs->FCB_SIZE + last_endpoint * fs->FCB_SIZE];
     uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_ENTRIES * fs->FCB_SIZE + min_start * fs->FCB_SIZE];
     memcpy(dest, source, block_size*fs->FCB_SIZE);
     FCB_set_start(fs, min_address, last_endpoint);
