@@ -62,27 +62,6 @@ __device__ u32 memcmp(uchar *target, uchar *source, int size){
 }
 
 /*
-  Description:   Read the # FCB's permission bit.
-  Input:   FCB_address
-  Output:   00/01/10/11  ->  read|write; 1-enable, 0-disable
-*/
-__device__ u32 FCB_read_permission(FileSystem *fs, u32 FCB_address){
-  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25];
-  return (*target >> 6) & 0b00000011;
-}
-
-/*
-  Description:   Set the # FCB's permission bit.
-  Input:  FCB_address,  option(1 -> read, 0 -> write), value(1 -> enable, 0-> disable)
-  Output: N/A
-*/
-__device__ void FCB_set_permission(FileSystem *fs, u32 FCB_address, u32 option, u32 value){
-  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25];
-  if(option) *target = (*target & 0b01111111) + (value << 7); // Option = 1,  set read permission
-  else *target = (*target & 0b10111111) + (value << 6); // option = 0,  set write permission
-}
-
-/*
   Description:   Read the # FCB's valid bit. 
   Input:    FCB_address
   Output:   Valid = 1, Invalid = 0.
@@ -360,11 +339,6 @@ __device__ void memory_compaction(FileSystem *fs){
   VCB_modification(fs, total_size, (fs->SUPERBLOCK_SIZE * 8 - total_size), 0);
 }
 
-/*
-  Description:   
-  Input:
-  Output: 
-*/
 __device__ u32 fs_open(FileSystem *fs, char *s, int op)
 {
   // Search the FCB, see if there are 
@@ -409,11 +383,6 @@ __device__ u32 fs_open(FileSystem *fs, char *s, int op)
   return (FCB_address + (op << 31));
 }
 
-/*
-  Description:   
-  Input:
-  Output: 
-*/
 __device__ void fs_read(FileSystem *fs, uchar *output, u32 size, u32 fp)
 {
 	/* Implement read operation here */

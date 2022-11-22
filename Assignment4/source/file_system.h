@@ -46,8 +46,6 @@ __device__ void fs_read(FileSystem *fs, uchar *output, u32 size, u32 fp);
 __device__ u32 fs_write(FileSystem *fs, uchar* input, u32 size, u32 fp);
 __device__ void fs_gsys(FileSystem *fs, int op);
 __device__ void fs_gsys(FileSystem *fs, int op, char *s);
-__device__ u32 FCB_read_permission(FileSystem *fs, u32 FCB_address);
-__device__ void FCB_set_permission(FileSystem *fs, u32 FCB_address, u32 option, u32 value);
 __device__ u32 FCB_read_validbit(FileSystem *fs, u32 FCB_address);
 __device__ void FCB_set_validbit(FileSystem *fs, u32 FCB_address, u32 value);
 __device__ void FCB_read_filename(FileSystem *fs, u32 FCB_address, uchar *output);
