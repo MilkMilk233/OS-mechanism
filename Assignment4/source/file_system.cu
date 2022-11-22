@@ -316,8 +316,8 @@ __device__ void memory_compaction(FileSystem *fs){
   int block_size;
   u32 min_start, min_address;
 
-  for(int i = 0; i < fs->VALID_BLOCK - 1; i++){
-    min_start = fs->SUPERBLOCK_SIZE*8 + 1;
+  for(int i = 0; i < fs->VALID_BLOCK; i++){
+    min_start = 99999;
     for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
       if(!FCB_read_validbit(fs,FCB_address)) continue;
       u32 start = FCB_read_start(fs, FCB_address);
@@ -326,6 +326,7 @@ __device__ void memory_compaction(FileSystem *fs){
         min_address = FCB_address;
       }
     }
+    if(min_start > 40000) continue;
     block_size = (FCB_read_size(fs, min_address) -1) / fs->FCB_SIZE + 1;
     if(!block_size) continue;
     uchar *dest = &fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_ENTRIES * fs->FCB_SIZE + last_endpoint * fs->FCB_SIZE];
@@ -374,7 +375,7 @@ __device__ u32 fs_open(FileSystem *fs, char *s, int op)
     // Clean up the area.
     if(op == G_WRITE){
       u32 start = FCB_read_start(fs, FCB_address);
-      u32 size = FCB_read_size(fs, FCB_address);
+      int size = FCB_read_size(fs, FCB_address);
       VCB_modification(fs, start, (size - 1) / fs->FCB_SIZE + 1, 0);
     }
   }
@@ -403,6 +404,7 @@ __device__ void fs_read(FileSystem *fs, uchar *output, u32 size, u32 fp)
 */
 __device__ u32 fs_write(FileSystem *fs, uchar* input, u32 size, u32 fp)
 {
+  if(size == 0) return 0;
   u32 FCB_address = fp & 0x7fffffff;
   u32 op = (fp & 0x80000000) >> 31;
   assert(op == 1);
@@ -532,10 +534,11 @@ __device__ void fs_gsys(FileSystem *fs, int op, char *s)
   }
   if(found){
     FCB_set_validbit(fs, FCB_address, 0);
+    fs->VALID_BLOCK--;
+    if(!FCB_read_size(fs, FCB_address)) return;
     u32 start = FCB_read_start(fs, FCB_address);
     int block_size = (FCB_read_size(fs, FCB_address) - 1) / fs->FCB_SIZE + 1;
     VCB_modification(fs, start, block_size, 0);
-    fs->VALID_BLOCK--;
   }
   else{
     printf("Error! The file '%s' does not exists.\n",s);

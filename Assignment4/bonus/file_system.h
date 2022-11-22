@@ -75,10 +75,10 @@ __device__ void print_FCB(FileSystem *fs);
 __device__ void print_VCB(FileSystem *fs);
 __device__ u32 FCB_read_folder(FileSystem *fs, u32 FCB_address);
 __device__ void FCB_set_folder(FileSystem *fs, u32 FCB_address, u32 value);
-__device__ u32 is_subfile(FileSystem *fs, int parent_FCB_address, int child_FCB_address);
-__device__ u32 find_parent_address(FileSystem *fs, int child_FCB_address);
 __device__ u32 FCB_read_childnum(FileSystem *fs, u32 FCB_address);
 __device__ void FCB_set_childnum(FileSystem *fs, u32 FCB_address, u32 value);
 __device__ void rm(FileSystem *fs, u32 FCB_address);
+__device__ u32 FCB_read_parent(FileSystem *fs, u32 FCB_address);
+__device__ void FCB_set_parent(FileSystem *fs, u32 FCB_address, u32 value);
 
 #endif
