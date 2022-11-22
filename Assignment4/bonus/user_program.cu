@@ -1,10 +1,11 @@
 ﻿#include "file_system.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <stdio.h>
 
 __device__ void user_program(FileSystem *fs, uchar *input, uchar *output) {
 	
-	
+	/*
 	/////////////// Test Case 1  ///////////////
 	u32 fp = fs_open(fs, "t.txt\0", G_WRITE);
 	fs_write(fs, input, 64, fp);
@@ -22,7 +23,7 @@ __device__ void user_program(FileSystem *fs, uchar *input, uchar *output) {
 	fs_gsys(fs, LS_D);
 	fs_gsys(fs, RM, "t.txt\0");
 	fs_gsys(fs, LS_S);
-
+	// */
 
 	/*
 	/////////////// Test Case 2  ///////////////
@@ -63,8 +64,8 @@ __device__ void user_program(FileSystem *fs, uchar *input, uchar *output) {
 		fs_gsys(fs,RM, fname[i]);
 
 	fs_gsys(fs,LS_D);
-	
-
+	// */
+	/*
 	/////////////// Test Case 3  ///////////////
 	u32 fp = fs_open(fs, "t.txt\0", G_WRITE);
 	fs_write(fs, input, 64, fp);
@@ -140,10 +141,10 @@ __device__ void user_program(FileSystem *fs, uchar *input, uchar *output) {
 	fp = fs_open(fs, "EA\0", G_WRITE);
 	fs_write(fs, input + 1024 * 100, 1024, fp);
 	fs_gsys(fs, LS_S);
-	*/
+	// */
 
 	/////////////// Test Case 4  ///////////////
-	/*
+	// /*
     u32 fp = fs_open(fs, "32-block-0", G_WRITE);
     fs_write(fs, input, 32, fp);
     for (int j = 0; j < 1023; ++j) {
@@ -181,5 +182,5 @@ __device__ void user_program(FileSystem *fs, uchar *input, uchar *output) {
         fp = fs_open(fs, tag, G_READ);
         fs_read(fs, output + j * 1024, 1024, fp);
     }
-	*/
+	// */
 }
