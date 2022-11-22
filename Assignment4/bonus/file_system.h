@@ -18,6 +18,11 @@ typedef uint8_t u8;
 #define LS_D 0
 #define LS_S 1
 #define RM 2
+#define MKDIR 3
+#define CD 4
+#define CD_P 5
+#define RM_RF 6
+#define PWD 7
 
 struct FileSystem {
 	uchar *volume;
@@ -33,6 +38,8 @@ struct FileSystem {
 	int MODIFY_TIME;
 	int CREATE_TIME;
 	int VALID_BLOCK;
+	int CURRENT_DIR;
+	int PARENT_DIR;
 };
 
 
@@ -66,5 +73,12 @@ __device__ int VCB_Query(FileSystem *fs, u32 n);
 __device__ void memory_compaction(FileSystem *fs);
 __device__ void print_FCB(FileSystem *fs);
 __device__ void print_VCB(FileSystem *fs);
+__device__ u32 FCB_read_folder(FileSystem *fs, u32 FCB_address);
+__device__ void FCB_set_folder(FileSystem *fs, u32 FCB_address, u32 value);
+__device__ u32 is_subfile(FileSystem *fs, int parent_FCB_address, int child_FCB_address);
+__device__ u32 find_parent_address(FileSystem *fs, int child_FCB_address);
+__device__ u32 FCB_read_childnum(FileSystem *fs, u32 FCB_address);
+__device__ void FCB_set_childnum(FileSystem *fs, u32 FCB_address, u32 value);
+__device__ void rm(FileSystem *fs, u32 FCB_address);
 
 #endif

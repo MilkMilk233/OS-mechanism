@@ -196,6 +196,7 @@ __device__ void user_program(FileSystem *fs, uchar *input, uchar *output) {
 	fs_write(fs, input + 32, 32, fp);
 	fp = fs_open(fs, "t.txt\0", G_READ);
 	fs_read(fs, output, 32, fp);
+	print_FCB(fs);
 	fs_gsys(fs, LS_D);
 	fs_gsys(fs, LS_S);
 	fs_gsys(fs, MKDIR, "app\0");

@@ -187,7 +187,7 @@ __device__ u32 FCB_read_ctime(FileSystem *fs, u32 FCB_address){
 */
 __device__ void FCB_set_ctime(FileSystem *fs, u32 FCB_address){
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+29];
-  memcpy(target, (uchar*)&fs->MODIFY_TIME, 3);
+  memcpy(target, (uchar*)&fs->CREATE_TIME, 3);
   fs->CREATE_TIME++;
 }
 

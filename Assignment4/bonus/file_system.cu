@@ -35,6 +35,11 @@ __device__ void fs_init(FileSystem *fs, uchar *volume, int SUPERBLOCK_SIZE,
   fs->MODIFY_TIME = 0;
   fs->CREATE_TIME = 0;
   fs->VALID_BLOCK = 0;
+  fs->CURRENT_DIR = 0;
+  fs->PARENT_DIR = 0;
+
+  // Create an root folder
+  fs_open(fs, "\0", MKDIR);
 }
 
 /*
@@ -68,7 +73,7 @@ __device__ u32 memcmp(uchar *target, uchar *source, int size){
 */
 __device__ u32 FCB_read_validbit(FileSystem *fs, u32 FCB_address){
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25];
-  return (*target >> 5) & 0b00000001;
+  return (*target >> 6) & 0b00000001;
 }
 
 /*
@@ -78,7 +83,47 @@ __device__ u32 FCB_read_validbit(FileSystem *fs, u32 FCB_address){
 */
 __device__ void FCB_set_validbit(FileSystem *fs, u32 FCB_address, u32 value){
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25];
-  fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25] = (*target & 0b11011111) + (value << 5);
+  fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25] = (*target & 0b10111111) + (value << 6);
+}
+
+/*
+  Description:   Check if # FCB block is folder.
+  Input:    FCB_address
+  Output:   True = 1, False = 0.
+*/
+__device__ u32 FCB_read_folder(FileSystem *fs, u32 FCB_address){
+  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25];
+  return (*target >> 7) & 0b00000001;
+}
+
+/*
+  Description:   Set # FCB to be (non) folder
+  Input:  True = 1, False = 0, FCB_address
+  Output:   N/A
+*/
+__device__ void FCB_set_folder(FileSystem *fs, u32 FCB_address, u32 value){
+  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25];
+  fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25] = (*target & 0b01111111) + (value << 7);
+}
+
+/*
+  Description:   Read how many subfiles in the folder (Unprotected)
+  Input:    FCB_address
+  Output:   number of subfiles / subfolders in the folder.
+*/
+__device__ u32 FCB_read_childnum(FileSystem *fs, u32 FCB_address){
+  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25];
+  return (*target) & 0b00111111;
+}
+
+/*
+  Description:   Read how many subfiles in the folder
+  Input:  number of subfiles / subfolders in the folder, FCB_address
+  Output:   N/A
+*/
+__device__ void FCB_set_childnum(FileSystem *fs, u32 FCB_address, u32 value){
+  uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25];
+  fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25] = (*target & 0b11000000) + (value & 0b00111111);
 }
 
 /*
@@ -187,7 +232,7 @@ __device__ u32 FCB_read_ctime(FileSystem *fs, u32 FCB_address){
 */
 __device__ void FCB_set_ctime(FileSystem *fs, u32 FCB_address){
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+29];
-  memcpy(target, (uchar*)&fs->MODIFY_TIME, 3);
+  memcpy(target, (uchar*)&fs->CREATE_TIME, 3);
   fs->CREATE_TIME++;
 }
 
@@ -205,7 +250,9 @@ __device__ void print_FCB(FileSystem *fs){
   for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
     if(!FCB_read_validbit(fs,FCB_address)) continue;
     FCB_read_filename(fs, FCB_address, file_name);
-    printf("Block %5d, name = %20s,start = %10d, size = %10d, ctime = %10d, ltime = %10d\n",FCB_address,file_name,FCB_read_start(fs,FCB_address), FCB_read_size(fs,FCB_address), FCB_read_ctime(fs, FCB_address), FCB_read_ltime(fs, FCB_address));
+    printf("Block %5d, name = %20s,start = %10d, size = %10d, ctime = %5d, ltime = %5d",FCB_address,file_name,FCB_read_start(fs,FCB_address), FCB_read_size(fs,FCB_address), FCB_read_ctime(fs, FCB_address), FCB_read_ltime(fs, FCB_address));
+    if(FCB_read_folder(fs,FCB_address)) printf("  (Folder)");
+    printf("\n");
   }
   printf("===============PRINTING_FCB_BLOCK_INFO_END=================\n");
   // delete[] file_name;
@@ -362,10 +409,17 @@ __device__ u32 fs_open(FileSystem *fs, char *s, int op)
         break;
       }
     }
+    // TODO: delete child address from current dictionary
+
     FCB_set_filename(fs, FCB_address, (uchar*)s);
-    FCB_set_permission(fs, FCB_address, 0, 1);
-    FCB_set_permission(fs, FCB_address, 1, 1);
     FCB_set_validbit(fs, FCB_address, 1);
+    if(op == G_WRITE || op == G_READ){
+      FCB_set_folder(fs, FCB_address, 0);
+    }
+    else if(op == MKDIR){
+      FCB_set_folder(fs, FCB_address, 1);
+      FCB_set_childnum(fs, FCB_address, 0);
+    }  
     FCB_set_start(fs, FCB_address, pow(2,16) - 1);   // No actual meaning, not involving memory compaction
     FCB_set_size(fs, FCB_address, 0);  
     FCB_set_ctime(fs, FCB_address);
@@ -427,6 +481,32 @@ __device__ u32 fs_write(FileSystem *fs, uchar* input, u32 size, u32 fp)
   return 0;
 }
 
+
+__device__ u32 is_subfile(FileSystem *fs, int parent_FCB_address, int child_FCB_address){
+  if(!FCB_read_folder(fs, parent_FCB_address) || parent_FCB_address == child_FCB_address) return 0;
+  u32 size;
+  u32 position = 0;
+  u32 num_of_child = FCB_read_childnum(fs, parent_FCB_address);
+  u32 parent_start = FCB_read_start(fs, parent_FCB_address);
+  short *parent_address = (short*)&fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_ENTRIES * fs->FCB_SIZE + parent_start * fs->FCB_SIZE];
+  for(int i = 0; i < num_of_child; i++){
+    if(parent_address[i] == child_FCB_address){
+      return 1;
+    }
+  }
+  return 0;
+}
+
+__device__ u32 find_parent_address(FileSystem *fs, int child_FCB_address){
+  u32 FCB_address;
+  if(!child_FCB_address) return 0;
+  for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
+    if(FCB_address == child_FCB_address) continue;
+    if(is_subfile(fs, FCB_address, child_FCB_address)) return FCB_address;
+  }
+  return 0;
+}
+
 /*
   Description:    Implement LS_D and LS_S operation here
   Input:  LS_D | LS_S
@@ -447,13 +527,12 @@ __device__ void fs_gsys(FileSystem *fs, int op)
 
   bool found_inner;
 
-  assert(op == LS_D || op == LS_S);
   if(op == LS_D){
     printf("===sort by modified time===\n");
     for(int i = 0; i < fs->VALID_BLOCK; i++){
       current_max_ltime = 0;
       for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
-        if(!FCB_read_validbit(fs,FCB_address)) continue;
+        if(!FCB_read_validbit(fs,FCB_address) || !is_subfile(fs,fs->CURRENT_DIR,FCB_address)) continue;
         ltime = FCB_read_ltime(fs, FCB_address);
         if(ltime < last_max_ltime && ltime >= current_max_ltime){
           current_max_ltime = ltime;
@@ -466,7 +545,7 @@ __device__ void fs_gsys(FileSystem *fs, int op)
       last_max_ltime = current_max_ltime;
     }
   }
-  else{
+  else if(op == LS_S){
     printf("===sort by file size===\n");
     for(int i = 0; i < fs->VALID_BLOCK; i++){
       current_max_size = 0;
@@ -474,7 +553,7 @@ __device__ void fs_gsys(FileSystem *fs, int op)
       found_inner = false;
       for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
         
-        if(!FCB_read_validbit(fs,FCB_address)) continue;
+        if(!FCB_read_validbit(fs,FCB_address) || !is_subfile(fs,fs->CURRENT_DIR,FCB_address)) continue;
         size = FCB_read_size(fs, FCB_address);
         ctime = FCB_read_ctime(fs, FCB_address);
         if(size < last_max_size && size > current_max_size){
@@ -510,36 +589,82 @@ __device__ void fs_gsys(FileSystem *fs, int op)
       last_max_size = current_max_size;
     }
   }
+  else if(op == CD_P){
+    fs->CURRENT_DIR = fs->PARENT_DIR;
+    fs->PARENT_DIR = find_parent_address(fs, fs->PARENT_DIR);
+  }
+  else if(op == PWD){
+    u32 address_list[5];
+    u32 address_size = 0;
+    u32 current_addr = fs->CURRENT_DIR;
+    for(int i = 0; i < 5; i++){
+      if(current_addr == 0) break;
+      address_list[i] = current_addr;
+      address_size++;
+      current_addr = find_parent_address(fs, current_addr);
+    }
+    for(int i = address_size - 1; i >= 0; i--){
+      FCB_read_filename(fs, address_list[i], name);
+      printf("/%s",name);
+    }
+    printf("\n");
+  }
 }
 
 /*
-  Description:   Implement rm operation here
-  Input:  RM, Filename
+  Description:   Delete file/folder with FCB_address as input
+  Input:  FCB_address
+  Output:   N/A
+*/
+__device__ void rm(FileSystem *fs, u32 FCB_address){
+  FCB_set_validbit(fs, FCB_address, 0);
+  if(FCB_read_folder(fs, FCB_address)){
+    u32 childnum = FCB_read_childnum(fs, FCB_address);
+    short *child_address = (short*)&fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_ENTRIES * fs->FCB_SIZE + FCB_address * fs->FCB_SIZE];
+    for(int i = 0; i < childnum; i++){
+      rm(fs, child_address[i]);
+    }
+  }
+  u32 start = FCB_read_start(fs, FCB_address);
+  u32 block_size = (FCB_read_size(fs, FCB_address) - 1) / fs->FCB_SIZE + 1;
+  VCB_modification(fs, start, block_size, 0);
+  fs->VALID_BLOCK--;
+}
+
+/*
+  Description:   Implement rm, cd, mkdir operation here
+  Input:  operation, Filename
   Output:   N/A
 */
 __device__ void fs_gsys(FileSystem *fs, int op, char *s)
 {
-  assert(op == RM);
+  int FCB_address;
   uchar file_name[20];
   bool found = false;
-  int FCB_address;
-  for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
-    FCB_read_filename(fs, FCB_address, file_name);
-    if(memcmp(file_name,(uchar*)s,20) == 0){
-      if(FCB_read_validbit(fs, FCB_address)){
+  u32 num_of_child, parent_start, child_address;
+  if(op == CD || op == RM || op == RM_RF){
+    num_of_child = FCB_read_childnum(fs, fs->CURRENT_DIR);
+    parent_start = FCB_read_start(fs, fs->CURRENT_DIR);
+    short *parent_address = (short*)&fs->volume[fs->SUPERBLOCK_SIZE + fs->FCB_ENTRIES * fs->FCB_SIZE + parent_start * fs->FCB_SIZE];
+    for(int i = 0; i < num_of_child; i++){
+      FCB_read_filename(fs, parent_address[i],file_name);
+      if(!memcmp((uchar*)s, file_name,20)){
+        child_address = parent_address[i];
         found = true;
         break;
       }
     }
+    assert(found == true);
   }
-  if(found){
-    FCB_set_validbit(fs, FCB_address, 0);
-    u32 start = FCB_read_start(fs, FCB_address);
-    int block_size = (FCB_read_size(fs, FCB_address) - 1) / fs->FCB_SIZE + 1;
-    VCB_modification(fs, start, block_size, 0);
-    fs->VALID_BLOCK--;
+  if(op == MKDIR){
+    fs_open(fs, s, MKDIR);
   }
-  else{
-    printf("Error! The file '%s' does not exists.\n",s);
+  else if(op == CD){
+    fs->PARENT_DIR = fs->CURRENT_DIR;
+    fs->CURRENT_DIR = child_address;
+  }
+  else if(op == RM || op == RM_RF){
+    rm(fs, child_address);
+    // TODO: delete child address from current dictionary
   }
 }

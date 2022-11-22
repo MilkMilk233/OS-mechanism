@@ -1,0 +1,16 @@
+C time set, address = 0
+Modify time ++, address = 0
+C time set, address = 1
+Modify time ++, address = 1
+Modify time ++, address = 1
+C time set, address = 2
+Modify time ++, address = 2
+Modify time ++, address = 2
+Modify time ++, address = 1
+===============PRINTING_FCB_BLOCK_INFO=====================
+Valid blocks = 3
+Block     0, name =                     ,start =      65535, size =          0, ctime =     0, ltime =     0  (Folder)
+Block     1, name =                t.txt,start =          0, size =         32, ctime =     1, ltime =     5
+Block     2, name =                b.txt,start =          2, size =         32, ctime =     2, ltime =     4
+===============PRINTING_FCB_BLOCK_INFO_END=================
+===sort by modified time===
