@@ -8,9 +8,9 @@
 __device__ __managed__ u32 gtime = 0;
 
 /*
-  Description:   
-  Input:
-  Output: 
+  Description:   File system initialization
+  Input:  Args
+  Output:   N/A
 */
 __device__ void fs_init(FileSystem *fs, uchar *volume, int SUPERBLOCK_SIZE,
 							int FCB_SIZE, int FCB_ENTRIES, int VOLUME_SIZE,
@@ -38,9 +38,9 @@ __device__ void fs_init(FileSystem *fs, uchar *volume, int SUPERBLOCK_SIZE,
 }
 
 /*
-  Description:   Copy memory bytes
-  Input:
-  Output: 
+  Description:   Copy content from source to target
+  Input:    uchar pointer (pointing to the source and target)
+  Output:   N/A 
 */
 __device__ void memcpy(uchar *target, uchar *source, int size){
   for(int i = 0; i < size; i++){
@@ -49,9 +49,9 @@ __device__ void memcpy(uchar *target, uchar *source, int size){
 }
 
 /*
-  Description:   Compare memory bytes and see if thye're identical
-  Input:
-  Output: 
+  Description:   Compare the source and target with equal size (used in comparing file names)
+  Input:  uchar pointer (pointing to the source and target)
+  Output:   1 -> different; 0-> identical
 */
 __device__ u32 memcmp(uchar *target, uchar *source, int size){
   for(int i = 0; i < size; i++){
@@ -62,9 +62,9 @@ __device__ u32 memcmp(uchar *target, uchar *source, int size){
 }
 
 /*
-  Description:   Read the FCB permission bit.
-  Input:
-  Output: 
+  Description:   Read the # FCB's permission bit.
+  Input:   FCB_address
+  Output:   00/01/10/11  ->  read|write; 1-enable, 0-disable
 */
 __device__ u32 FCB_read_permission(FileSystem *fs, u32 FCB_address){
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25];
@@ -72,9 +72,9 @@ __device__ u32 FCB_read_permission(FileSystem *fs, u32 FCB_address){
 }
 
 /*
-  Description:   Set the permission bit, 
-  Input:
-  Output: 
+  Description:   Set the # FCB's permission bit.
+  Input:  FCB_address,  option(1 -> read, 0 -> write), value(1 -> enable, 0-> disable)
+  Output: N/A
 */
 __device__ void FCB_set_permission(FileSystem *fs, u32 FCB_address, u32 option, u32 value){
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25];
@@ -83,9 +83,9 @@ __device__ void FCB_set_permission(FileSystem *fs, u32 FCB_address, u32 option, 
 }
 
 /*
-  Description:   Read the FCB valid bit. Valid = 1, Invalid = 0.
-  Input:
-  Output: 
+  Description:   Read the # FCB's valid bit. 
+  Input:    FCB_address
+  Output:   Valid = 1, Invalid = 0.
 */
 __device__ u32 FCB_read_validbit(FileSystem *fs, u32 FCB_address){
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25];
@@ -94,8 +94,8 @@ __device__ u32 FCB_read_validbit(FileSystem *fs, u32 FCB_address){
 
 /*
   Description:   Set the FCB permission bit. Valid = 1, Invalid = 0.
-  Input:
-  Output: 
+  Input:  Valid = 1, Invalid = 0, FCB_address
+  Output:   N/A
 */
 __device__ void FCB_set_validbit(FileSystem *fs, u32 FCB_address, u32 value){
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE + 25];
@@ -104,8 +104,8 @@ __device__ void FCB_set_validbit(FileSystem *fs, u32 FCB_address, u32 value){
 
 /*
   Description:   Read the FCB filename
-  Input:
-  Output: 
+  Input:  output pointer, FCB_address
+  Output:   N/A
 */
 __device__ void FCB_read_filename(FileSystem *fs, u32 FCB_address, uchar *output){
   uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE];
@@ -114,8 +114,8 @@ __device__ void FCB_read_filename(FileSystem *fs, u32 FCB_address, uchar *output
 
 /*
   Description:   Set the FCB filename
-  Input:
-  Output: 
+  Input:  input pointer, FCB_address
+  Output:   N/A
 */
 __device__ void FCB_set_filename(FileSystem *fs, u32 FCB_address, uchar *input){
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE];
@@ -124,8 +124,8 @@ __device__ void FCB_set_filename(FileSystem *fs, u32 FCB_address, uchar *input){
 
 /*
   Description:   Read the FCB starting point address (Unit: block)
-  Input:
-  Output: 
+  Input:  FCB_address
+  Output:   start block number
 */
 __device__ u32 FCB_read_start(FileSystem *fs, u32 FCB_address){
   uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+20];
@@ -136,7 +136,7 @@ __device__ u32 FCB_read_start(FileSystem *fs, u32 FCB_address){
 
 /*
   Description:   Set the FCB starting point address (Unit: block)
-  Input:  block
+  Input:  start block number, FCB_address
   Output:   N/A
 */
 __device__ void FCB_set_start(FileSystem *fs, u32 FCB_address, u32 value){
@@ -145,9 +145,9 @@ __device__ void FCB_set_start(FileSystem *fs, u32 FCB_address, u32 value){
 }
 
 /*
-  Description:   Read the FCB starting point address (Unit: block)
-  Input:
-  Output: 
+  Description:   Read the FCB size (Unit: bytes)
+  Input:  FCB_address
+  Output:   size
 */
 __device__ u32 FCB_read_size(FileSystem *fs, u32 FCB_address){
   uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+22];
@@ -157,9 +157,9 @@ __device__ u32 FCB_read_size(FileSystem *fs, u32 FCB_address){
 }
 
 /*
-  Description:   Set the FCB starting point address (Unit: block)
-  Input:
-  Output: 
+  Description:   Set the FCB size (Unit: bytes)
+  Input:  size, FCB_address
+  Output:   N/A
 */
 __device__ void FCB_set_size(FileSystem *fs, u32 FCB_address, u32 value){
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+22];
@@ -168,8 +168,8 @@ __device__ void FCB_set_size(FileSystem *fs, u32 FCB_address, u32 value){
 
 /*
   Description:   Read the FCB Last modified time
-  Input:
-  Output: 
+  Input: FCB_address
+  Output: Last modified time
 */
 __device__ u32 FCB_read_ltime(FileSystem *fs, u32 FCB_address){
   uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+26];
@@ -180,8 +180,8 @@ __device__ u32 FCB_read_ltime(FileSystem *fs, u32 FCB_address){
 
 /*
   Description:   Set the FCB Last modified time
-  Input:
-  Output: 
+  Input:  FCB_address, Last modified time
+  Output: N/A
 */
 __device__ void FCB_set_ltime(FileSystem *fs, u32 FCB_address){
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+26];
@@ -191,8 +191,8 @@ __device__ void FCB_set_ltime(FileSystem *fs, u32 FCB_address){
 
 /*
   Description:   Read the FCB created time
-  Input:
-  Output: 
+  Input:  FCB_address
+  Output:   Create time
 */
 __device__ u32 FCB_read_ctime(FileSystem *fs, u32 FCB_address){
   uchar *source = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+29];
@@ -203,8 +203,8 @@ __device__ u32 FCB_read_ctime(FileSystem *fs, u32 FCB_address){
 
 /*
   Description:   Set the FCB created time
-  Input:
-  Output: 
+  Input:  FCB_address
+  Output:   N/A
 */
 __device__ void FCB_set_ctime(FileSystem *fs, u32 FCB_address){
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+29];
@@ -214,8 +214,8 @@ __device__ void FCB_set_ctime(FileSystem *fs, u32 FCB_address){
 
 /*
   Description:   For testing only, printing out all FCB info.
-  Input: 
-  Output: 
+  Input:    N/A
+  Output:   N/A
 */
 
 __device__ void print_FCB(FileSystem *fs){
@@ -234,8 +234,8 @@ __device__ void print_FCB(FileSystem *fs){
 
 /*
   Description:   For testing only, printing out all VCB info.
-  Input: 
-  Output: 
+  Input:  N/A
+  Output:   N/A
 */
 __device__ void print_VCB(FileSystem *fs){
   printf("===============PRINTING_VCB_BLOCK_INFO=====================\n");
@@ -255,7 +255,7 @@ __device__ void print_VCB(FileSystem *fs){
 /*
   Description:   Check if there is continuous n free blocks. (unit: 32-bytes-large block)
   Input:  blocks
-  Output: blocks
+  Output: blocks (if memory compaction needed, then return -1)
 */
 __device__ int VCB_Query(FileSystem *fs, u32 n){
   bool found = false;
@@ -297,8 +297,8 @@ __device__ int VCB_Query(FileSystem *fs, u32 n){
 
 /*
   Description:   bit-operation on masking, supporting VCB_modification ONLY
-  Input:
-  Output: 
+  Input:  uchar # of VCB block
+  Output: M/A
 */
 __device__ void cover(FileSystem *fs, u32 layer, u32 start, u32 end, u32 value){
   uchar mask = 0;
@@ -464,13 +464,12 @@ __device__ void fs_read(FileSystem *fs, uchar *output, u32 size, u32 fp)
 }
 
 /*
-  Description:   
-  Input:
-  Output: 
+  Description:   Implement write operation here
+  Input:  input pointer, size, file descriptor
+  Output:   N/A
 */
 __device__ u32 fs_write(FileSystem *fs, uchar* input, u32 size, u32 fp)
 {
-	/* Implement write operation here */
   u32 FCB_address = fp & 0x7fffffff;
   u32 op = (fp & 0x80000000) >> 31;
   // printf("FCB_address = %d\n",FCB_address);
@@ -504,13 +503,12 @@ __device__ u32 fs_write(FileSystem *fs, uchar* input, u32 size, u32 fp)
 }
 
 /*
-  Description:   
-  Input:
-  Output: 
+  Description:    Implement LS_D and LS_S operation here
+  Input:  LS_D | LS_S
+  Output: N/A
 */
 __device__ void fs_gsys(FileSystem *fs, int op)
 {
-	/* Implement LS_D and LS_S operation here */
   u32 FCB_address, ltime, size, current_max_address;
   u32 last_max_ltime = pow(2,24);
   u32 current_max_ltime = 0;
@@ -609,13 +607,12 @@ __device__ void fs_gsys(FileSystem *fs, int op)
       last_max_size = current_max_size;
     }
   }
-  // delete[] name;
 }
 
 /*
   Description:   Implement rm operation here
-  Input:
-  Output: 
+  Input:  RM, Filename
+  Output:   N/A
 */
 __device__ void fs_gsys(FileSystem *fs, int op, char *s)
 {
@@ -642,7 +639,4 @@ __device__ void fs_gsys(FileSystem *fs, int op, char *s)
   else{
     printf("Error! The file '%s' does not exists.\n",s);
   }
-  // delete[] file_name;
 }
-
-// Later to be continued: Time ranking compress
