@@ -19,5 +19,5 @@ nvcc --relocatable-device-code=true main.cu user_program.cu file_system.cu -o te
 sleep 1
 
 ## Run the executable file
-srun ./test > ./output/testcase4.txt
+srun ./test
 
