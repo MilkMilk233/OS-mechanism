@@ -485,6 +485,7 @@ __device__ u32 fs_open(FileSystem *fs, char *s, int op)
       }
     }
   }
+  delete[] file_name;
   if(!found){
     for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
       if(FCB_read_validbit(fs, FCB_address) == 0){
@@ -586,23 +587,12 @@ __device__ u32 fs_write(FileSystem *fs, uchar* input, u32 size, u32 fp)
 */
 __device__ void fs_gsys(FileSystem *fs, int op)
 {
-  u32 FCB_address, ltime, size, current_max_address;
-  u32 last_max_ltime = pow(2,24);
-  u32 current_max_ltime = 0;
-  u32 last_max_size = fs->MAX_FILE_SIZE + 1;
-  u32 current_max_size = 0;
   uchar name[20];
-
-  u32 ctime, child_num;
-  u32 last_min_ctime = 0;
-  u32 current_min_ctime = pow(2,24);
-  u32 address_list[5];
-  u32 address_size = 0;
-  u32 current_addr = fs->CURRENT_DIR;
   int i = 0;
-  bool found_inner;
-
   if(op == LS_D){
+    u32 ltime, current_max_address, child_num, FCB_address;
+    u32 last_max_ltime = pow(2,24);
+    u32 current_max_ltime = 0;
     printf("===sort by modified time===\n");
     child_num = FCB_read_childnum(fs, fs->CURRENT_DIR);
     for(i = 0; i < child_num; i++){
@@ -623,6 +613,12 @@ __device__ void fs_gsys(FileSystem *fs, int op)
     }
   }
   else if(op == LS_S){
+    bool found_inner;
+    u32 size, FCB_address, current_max_address, ctime, child_num;
+    u32 last_max_size = fs->MAX_FILE_SIZE + 1;
+    u32 current_max_size = 0;
+    u32 last_min_ctime = 0;
+    u32 current_min_ctime = pow(2,24);
     printf("===sort by file size===\n");
     child_num = FCB_read_childnum(fs, fs->CURRENT_DIR);
     for(i = 0; i < child_num; i++){
@@ -673,7 +669,9 @@ __device__ void fs_gsys(FileSystem *fs, int op)
     fs->PARENT_DIR = FCB_read_parent(fs, fs->PARENT_DIR);
   }
   else if(op == PWD){
-    
+    u32 current_addr = fs->CURRENT_DIR;
+    u32 address_size = 0;
+    u32 address_list[5];
     for(i = 0; i < 5; i++){
       if(current_addr == 0) break;
       address_list[i] = current_addr;
@@ -716,10 +714,9 @@ __device__ void rm(FileSystem *fs, u32 FCB_address){
 __device__ void fs_gsys(FileSystem *fs, int op, char *s)
 {
   int FCB_address;
-  uchar file_name[20];
-  bool found = false;
-  u32 child_num;
   if(op == CD || op == RM || op == RM_RF){
+    bool found = false;
+    uchar file_name[20];
     for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){  
       if(!FCB_read_validbit(fs,FCB_address) || FCB_read_parent(fs, FCB_address) != fs->CURRENT_DIR) continue;
       FCB_read_filename(fs, FCB_address, file_name);
@@ -728,6 +725,7 @@ __device__ void fs_gsys(FileSystem *fs, int op, char *s)
         break;
       }
     }
+    delete[] file_name;
     assert(found == true);
   }
   if(op == MKDIR){
@@ -738,6 +736,7 @@ __device__ void fs_gsys(FileSystem *fs, int op, char *s)
     fs->CURRENT_DIR = FCB_address;
   }
   else if(op == RM || op == RM_RF){
+    u32 child_num;
     rm(fs, FCB_address);
     child_num = FCB_read_childnum(fs, fs->CURRENT_DIR);
     FCB_set_childnum(fs, fs->CURRENT_DIR, child_num-1);
@@ -754,5 +753,3 @@ __device__ void fs_gsys(FileSystem *fs, int op, char *s)
     }
   }
 }
-
-// TODO：写一个重新排序ctime和ltime的接口。。。。。

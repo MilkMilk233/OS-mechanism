@@ -413,6 +413,7 @@ __device__ u32 fs_open(FileSystem *fs, char *s, int op)
       }
     }
   }
+  delete[] file_name;
   if(!found){
     for(FCB_address = 0; FCB_address < fs->FCB_ENTRIES; FCB_address++){
       if(FCB_read_validbit(fs, FCB_address) == 0){
@@ -491,21 +492,13 @@ __device__ u32 fs_write(FileSystem *fs, uchar* input, u32 size, u32 fp)
 */
 __device__ void fs_gsys(FileSystem *fs, int op)
 {
-  u32 FCB_address, ltime, size, current_max_address;
-  u32 last_max_ltime = pow(2,24);
-  u32 current_max_ltime = 0;
-  u32 last_max_size = fs->MAX_FILE_SIZE + 1;
   u32 current_max_size = 0;
   uchar name[20];
-
-  u32 ctime, current_min_address;
-  u32 last_min_ctime = 0;
-  u32 current_min_ctime = pow(2,24);
-
-  bool found_inner;
-
   assert(op == LS_D || op == LS_S);
   if(op == LS_D){
+    u32 FCB_address, ltime, current_max_address;
+    u32 last_max_ltime = pow(2,24);
+    u32 current_max_ltime = 0;
     printf("===sort by modified time===\n");
     for(int i = 0; i < fs->VALID_BLOCK; i++){
       current_max_ltime = 0;
@@ -524,6 +517,11 @@ __device__ void fs_gsys(FileSystem *fs, int op)
     }
   }
   else{
+    u32 FCB_address, size, current_max_address, ctime;
+    u32 last_max_size = fs->MAX_FILE_SIZE + 1;
+    u32 last_min_ctime = 0;
+    u32 current_min_ctime = pow(2,24);
+    bool found_inner;
     printf("===sort by file size===\n");
     for(int i = 0; i < fs->VALID_BLOCK; i++){
       current_max_size = 0;
@@ -589,6 +587,7 @@ __device__ void fs_gsys(FileSystem *fs, int op, char *s)
       }
     }
   }
+  delete[] file_name;
   if(found){
     FCB_set_validbit(fs, FCB_address, 0);
     fs->VALID_BLOCK--;

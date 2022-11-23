@@ -8,7 +8,7 @@
 #SBATCH --partition=Debug     	## the partitions to run in (comma seperated)
 #SBATCH --ntasks=1  ## number of tasks (analyses) to run
 #SBATCH --gpus-per-task=1 # number of gpus per task
-#SBATCH --mem-per-gpu=100M # Memory allocated for the job
+#SBATCH --mem-per-gpu=800K # Memory allocated for the job
 #SBATCH --time=0-00:02:00  ## time for analysis (day-hour:min:sec)
 
 make clean
