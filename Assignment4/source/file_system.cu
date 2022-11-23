@@ -270,7 +270,7 @@ __device__ int VCB_Query(FileSystem *fs, u32 n){
 /*
   Description:   bit-operation on masking, supporting VCB_modification ONLY
   Input:  uchar # of VCB block
-  Output: M/A
+  Output: N/A
 */
 __device__ void cover(FileSystem *fs, u32 layer, u32 start, u32 end, u32 value){
   uchar mask = 0;
