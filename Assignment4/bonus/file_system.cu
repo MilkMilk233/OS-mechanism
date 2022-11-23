@@ -435,8 +435,18 @@ __device__ u32 fs_open(FileSystem *fs, char *s, int op)
         break;
       }
     }
-    // TODO: add content to the current folder
-    // printf("NOT found, create at FCB_address %d\n",FCB_address);
+    // TODO: add size to the current folder
+    if(FCB_address){
+      u32 word_count = 0;
+      u32 current_size = 0;
+      for(int i = 0; i < 20; i++){
+        word_count++;
+        if(s[i] == '\0') break;
+      }
+      current_size = FCB_read_size(fs, fs->CURRENT_DIR);
+      FCB_set_size(fs, fs->CURRENT_DIR, current_size+word_count);
+    }
+
     FCB_set_parent(fs, FCB_address, fs->CURRENT_DIR);
     FCB_set_filename(fs, FCB_address, (uchar*)s);
     FCB_set_validbit(fs, FCB_address, 1);
@@ -675,6 +685,16 @@ __device__ void fs_gsys(FileSystem *fs, int op, char *s)
     child_num = FCB_read_childnum(fs, fs->CURRENT_DIR);
     FCB_set_childnum(fs, fs->CURRENT_DIR, child_num-1);
     // TODO: delete child address from current dictionary
+    if(FCB_address){
+      u32 word_count = 0;
+      u32 current_size = 0;
+      for(int i = 0; i < 20; i++){
+        word_count++;
+        if(s[i] == '\0') break;
+      }
+      current_size = FCB_read_size(fs, fs->CURRENT_DIR);
+      FCB_set_size(fs, fs->CURRENT_DIR, current_size-word_count);
+    }
   }
 }
 

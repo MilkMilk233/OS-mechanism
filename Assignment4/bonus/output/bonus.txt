@@ -30,16 +30,16 @@ A.txt 64
 ===sort by file size===
 a.txt 64
 b.txt 32
-soft 0 d
+soft 24 d
 /app
 ===sort by file size===
 t.txt 32
 b.txt 32
-app 0 d
+app 17 d
 ===sort by file size===
 a.txt 64
 b.txt 32
 ===sort by file size===
 t.txt 32
 b.txt 32
-app 0 d
+app 12 d
