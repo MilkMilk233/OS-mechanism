@@ -524,6 +524,14 @@ __device__ u32 fs_open(FileSystem *fs, char *s, int op)
     FCB_set_ctime(fs, FCB_address);
     FCB_set_ltime(fs, FCB_address);
     fs->VALID_BLOCK++;
+    start = fs->CURRENT_DIR;
+    for(int i = 0; i < 4; i++){
+      FCB_set_ltime(fs, start);
+      if(start){
+        start = FCB_read_parent(fs, start);
+      }
+      else break;
+    }
   }
   else{
     // Clean up the area.
@@ -577,6 +585,14 @@ __device__ u32 fs_write(FileSystem *fs, uchar* input, u32 size, u32 fp)
   FCB_set_size(fs, FCB_address, size);
   FCB_set_ltime(fs, FCB_address);
   VCB_modification(fs, storage_address, (size - 1) / fs->FCB_SIZE + 1, 1);
+  FCB_address = fs->CURRENT_DIR;
+  for(op = 0; op < 4; op++){
+    FCB_set_ltime(fs, FCB_address);
+    if(FCB_address){
+      FCB_address = FCB_read_parent(fs, FCB_address);
+    }
+    else break;
+  }
   return 0;
 }
 
@@ -750,6 +766,14 @@ __device__ void fs_gsys(FileSystem *fs, int op, char *s)
       }
       current_size = FCB_read_size(fs, fs->CURRENT_DIR);
       FCB_set_size(fs, fs->CURRENT_DIR, current_size-word_count);
+    }
+    FCB_address = fs->CURRENT_DIR;
+    for(child_num = 0; child_num < 4; child_num++){
+      FCB_set_ltime(fs, FCB_address);
+      if(FCB_address){
+        FCB_address = FCB_read_parent(fs, FCB_address);
+      }
+      else break;
     }
   }
 }
