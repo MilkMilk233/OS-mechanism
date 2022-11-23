@@ -80,5 +80,7 @@ __device__ void FCB_set_childnum(FileSystem *fs, u32 FCB_address, u32 value);
 __device__ void rm(FileSystem *fs, u32 FCB_address);
 __device__ u32 FCB_read_parent(FileSystem *fs, u32 FCB_address);
 __device__ void FCB_set_parent(FileSystem *fs, u32 FCB_address, u32 value);
+__device__ void ltime_compact(FileSystem *fs);
+__device__ void ctime_compact(FileSystem *fs);
 
 #endif

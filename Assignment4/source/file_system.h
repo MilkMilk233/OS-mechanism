@@ -66,5 +66,7 @@ __device__ int VCB_Query(FileSystem *fs, u32 n);
 __device__ void memory_compaction(FileSystem *fs);
 __device__ void print_FCB(FileSystem *fs);
 __device__ void print_VCB(FileSystem *fs);
+__device__ void ltime_compact(FileSystem *fs);
+__device__ void ctime_compact(FileSystem *fs);
 
 #endif

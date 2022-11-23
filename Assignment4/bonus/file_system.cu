@@ -203,11 +203,40 @@ __device__ u32 FCB_read_ltime(FileSystem *fs, u32 FCB_address){
 }
 
 /*
+  Description:   Compact the last modified time series
+  Input:  N/A
+  Output:   N/A
+*/
+__device__ void ltime_compact(FileSystem *fs){
+  u32 current_min_ltime = pow(2,25);
+  u32 current_address = 0;
+  u32 last_target = 0;
+  u32 current_ltime = 0;
+  for(u32 i = 1; i < fs->VALID_BLOCK; i++){
+    current_min_ltime = pow(2,25);
+    for(int FCB_address = 1; FCB_address < fs->FCB_ENTRIES; FCB_address++){
+      if(!FCB_read_validbit(fs, FCB_address)) continue;
+      current_ltime = FCB_read_ltime(fs, FCB_address);
+      
+      if( current_ltime > last_target && current_ltime < current_min_ltime ){
+        current_address = FCB_address;
+        current_min_ltime = current_ltime;
+      }
+    }
+    last_target++;
+    uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + current_address*fs->FCB_SIZE+26];
+    memcpy(target, (uchar*)&last_target, 3);
+  }
+  fs->MODIFY_TIME = last_target + 1;
+}
+
+/*
   Description:   Set the FCB Last modified time
   Input:  FCB_address, Last modified time
   Output: N/A
 */
 __device__ void FCB_set_ltime(FileSystem *fs, u32 FCB_address){
+  if(fs->MODIFY_TIME > pow(2,24) - 30) ltime_compact(fs); 
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+26];
   memcpy(target, (uchar*)&fs->MODIFY_TIME, 3);
   fs->MODIFY_TIME++;
@@ -226,11 +255,39 @@ __device__ u32 FCB_read_ctime(FileSystem *fs, u32 FCB_address){
 }
 
 /*
+  Description:   Compact the create time series
+  Input:  N/A
+  Output:   N/A
+*/
+__device__ void ctime_compact(FileSystem *fs){
+  u32 current_min_ctime = pow(2,25);
+  u32 current_address = 0;
+  u32 last_target = 0;
+  u32 current_ctime = 0;
+  for(u32 i = 1; i < fs->VALID_BLOCK; i++){
+    current_min_ctime = pow(2,25);
+    for(int FCB_address = 1; FCB_address < fs->FCB_ENTRIES; FCB_address++){
+      if(!FCB_read_validbit(fs, FCB_address)) continue;
+      current_ctime = FCB_read_ctime(fs, FCB_address);
+      if( current_ctime > last_target && current_ctime < current_min_ctime ){
+        current_address = FCB_address;
+        current_min_ctime = current_ctime;
+      }
+    }
+    last_target++;
+    uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + current_address*fs->FCB_SIZE+29];
+    memcpy(target, (uchar*)&last_target, 2);
+  }
+  fs->MODIFY_TIME = last_target + 1;
+}
+
+/*
   Description:   Set the FCB created time
   Input:  FCB_address
   Output:   N/A
 */
 __device__ void FCB_set_ctime(FileSystem *fs, u32 FCB_address){
+  if(fs->MODIFY_TIME > pow(2,16) - 30) ctime_compact(fs); 
   uchar *target = &fs->volume[fs->SUPERBLOCK_SIZE + FCB_address*fs->FCB_SIZE+29];
   memcpy(target, (uchar*)&fs->CREATE_TIME, 2);
   fs->CREATE_TIME++;
