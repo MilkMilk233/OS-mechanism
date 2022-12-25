@@ -5,7 +5,7 @@ This repository stores all the codes in CSC3150, 22 Fall @ CUHK-SZ.
 Assignment 1: (110/110)  
 Assignment 2: (110/110)  
 Assignment 3: (115/115)  
-Assignment 4:   
+Assignment 4: (115/115)  
 Assignment 5: Optional in 22 Fall  
 
 Remark: 
