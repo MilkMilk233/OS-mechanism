@@ -8,12 +8,6 @@ Assignment 3: (115/115)
 Assignment 4: (115/115)  
 Assignment 5: Optional in 22 Fall  
 
-Remark: 
-- Please take University Honor Code into account.
-- Do it by yourself isn't easy, but can help you grow stronger in future career.
-
-If you think this inappropriate, please contact [zhixinchen@link.cuhk.edu.cn](mailto:zhixinchen@link.cuhk.edu.cn) for repo withdrawal.
-
 ## Troubleshooting
 
 ### Vscode always get error on ECONNREFUSED
